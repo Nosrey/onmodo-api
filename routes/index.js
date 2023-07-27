@@ -56,115 +56,115 @@ router.route('/forgotpassword')
 router.route('/forgotpassword/:token')
     .post(userController.actualizarPassword)
 
-// Carga
-router.route('/carga')
-    .post(cargaController.newCarga)
+// // Carga
+// router.route('/carga')
+//     .post(cargaController.newCarga)
 
 
-// ChequeoEpp
-router.route('/chequeoepp')
-    .post(chequeoEppController.newChequeo)
+// // ChequeoEpp
+// router.route('/chequeoepp')
+//     .post(chequeoEppController.newChequeo)
 
-// Control Alergenos 
-router.route('/controlalergenos')
-    .post(controlAlergenosController.newControlAlergenos)
+// // Control Alergenos 
+// router.route('/controlalergenos')
+//     .post(controlAlergenosController.newControlAlergenos)
 
 
-// Control Cloro 
-router.route('/controlcloro')
-    .post(controlCloroController.newControlCloro)
+// // Control Cloro 
+// router.route('/controlcloro')
+//     .post(controlCloroController.newControlCloro)
 
-// Control Equipo Frio 
-router.route('/controlequipofrio')
-    .post(controlEquipoFrioController.newControlEquipoFrio)
+// // Control Equipo Frio 
+// router.route('/controlequipofrio')
+//     .post(controlEquipoFrioController.newControlEquipoFrio)
 
-// Control procesos 
-router.route('/controlprocesos')
-    .post(controlProcesosController.newControlProcesos)
+// // Control procesos 
+// router.route('/controlprocesos')
+//     .post(controlProcesosController.newControlProcesos)
 
-// Control Vidrios
-router.route('/controlvidrios')
-    .post(controlVidriosController.newControlVidrios)
+// // Control Vidrios
+// router.route('/controlvidrios')
+//     .post(controlVidriosController.newControlVidrios)
 
-// Descongelamiento
-router.route('/descongelamiento')
-    .post(descongelamientoController.newDescongelamiento)
+// // Descongelamiento
+// router.route('/descongelamiento')
+//     .post(descongelamientoController.newDescongelamiento)
 
-// Despacho Produccion
-router.route('/despachoproduccion')
-    .post(despachoProduccionController.newDespachoProduccion)
+// // Despacho Produccion
+// router.route('/despachoproduccion')
+//     .post(despachoProduccionController.newDespachoProduccion)
 
-// Distribucion
-router.route('/distribucion')
-    .post(distribucionController.newDistribucion)
+// // Distribucion
+// router.route('/distribucion')
+//     .post(distribucionController.newDistribucion)
 
-// Entrega Bidones
-router.route('/entregabidones')
-    .post(entregaBidonesController.newEntregaBidones)
+// // Entrega Bidones
+// router.route('/entregabidones')
+//     .post(entregaBidonesController.newEntregaBidones)
 
-// Entrega Ropa
-router.route('/entregaropa')
-    .post(entregaRopaController.newEntregaRopa)
+// // Entrega Ropa
+// router.route('/entregaropa')
+//     .post(entregaRopaController.newEntregaRopa)
 
-// Flash Incidente
-router.route('/flashincidente')
-    .post(flashIncidenteController.newFlashIncidente)
+// // Flash Incidente
+// router.route('/flashincidente')
+//     .post(flashIncidenteController.newFlashIncidente)
 
-// Informe Int Accidente
-router.route('/informeintaccidente')
-    .post(InformeIntAccidenteController.newInformeIntAccidente)
+// // Informe Int Accidente
+// router.route('/informeintaccidente')
+//     .post(InformeIntAccidenteController.newInformeIntAccidente)
 
-// Planilla Armado
-router.route('/planillaarmado')
-    .post(planillaArmadoController.newPlanillaArmado)
+// // Planilla Armado
+// router.route('/planillaarmado')
+//     .post(planillaArmadoController.newPlanillaArmado)
 
-// Recepcion
-router.route('/recepcion')
-    .post(recepcionController.newRecepcion)
+// // Recepcion
+// router.route('/recepcion')
+//     .post(recepcionController.newRecepcion)
 
-// Recuperacion Producto
-router.route('/recuperacionproducto')
-    .post(recuperacionProductoController.newRecuperacionProducto)
+// // Recuperacion Producto
+// router.route('/recuperacionproducto')
+//     .post(recuperacionProductoController.newRecuperacionProducto)
 
-// Registro Capacitacion
-router.route('/registrocapacitacion')
-    .post(registroCapacitacionController.newRegistroCapacitacion)
+// // Registro Capacitacion
+// router.route('/registrocapacitacion')
+//     .post(registroCapacitacionController.newRegistroCapacitacion)
 
-// Registro Decomiso
-router.route('/registrodecomiso')
-    .post(registroDecomisoController.newRegistroDecomiso)
+// // Registro Decomiso
+// router.route('/registrodecomiso')
+//     .post(registroDecomisoController.newRegistroDecomiso)
 
-// Registro Simulacro
-router.route('/registrosimulacro')
-    .post(registroSimulacroController.newRegistroSimulacro)
+// // Registro Simulacro
+// router.route('/registrosimulacro')
+//     .post(registroSimulacroController.newRegistroSimulacro)
 
-// Reporte Rechazo
-router.route('/reporterechazo')
-    .post(reporteRechazoController.newReporteRechazo)
+// // Reporte Rechazo
+// router.route('/reporterechazo')
+//     .post(reporteRechazoController.newReporteRechazo)
 
-// Salud Manipuladores
-router.route('/saludmanipuladores')
-    .post(saludManipuladoresController.newSaludManipuladores)
+// // Salud Manipuladores
+// router.route('/saludmanipuladores')
+//     .post(saludManipuladoresController.newSaludManipuladores)
 
-// Sanitizacion
-router.route('/sanitizacion')
-    .post(sanitizacionController.newSanitizacion)
+// // Sanitizacion
+// router.route('/sanitizacion')
+//     .post(sanitizacionController.newSanitizacion)
 
-// Servicio En Linea
-router.route('/servicioenlinea')
-    .post(servicioEnLineaController.newServicioEnLinea)
+// // Servicio En Linea
+// router.route('/servicioenlinea')
+//     .post(servicioEnLineaController.newServicioEnLinea)
 
-// Uso Cambio Aceite
-router.route('/usocambioaceite')
-    .post(usoCambioAceiteController.newUsoCambioAceite)
+// // Uso Cambio Aceite
+// router.route('/usocambioaceite')
+//     .post(usoCambioAceiteController.newUsoCambioAceite)
 
-// Verificacion Balanza
-router.route('/verificacionbalanza')
-    .post(verificacionBalanzaController.newVerificacionBalanza)
+// // Verificacion Balanza
+// router.route('/verificacionbalanza')
+//     .post(verificacionBalanzaController.newVerificacionBalanza)
 
-// Verificacion Termometros
-router.route('/verificaciontermometros')
-    .post(verificacionTermometrosController.newVerificacionTermometros)
+// // Verificacion Termometros
+// router.route('/verificaciontermometros')
+//     .post(verificacionTermometrosController.newVerificacionTermometros)
 
 
 module.exports = router

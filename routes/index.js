@@ -1,8 +1,13 @@
 const express = require('express')
 const router = express.Router()
 const passport = require('passport')
+
 const userController = require('../controllers/userController')
 const cargaController = require('../controllers/cargaController')
+const chequeoEppController = require('../controllers/ChequeoEppController')
+const controlAlergenosController = require('../controllers/controlAlergenosController')
+const controlCloroController = require('../controllers/controlCloroController')
+const controlEquipoFrioController = require('../controllers/controlEquipoFrioController')
 const controlProcesosController = require('../controllers/controlProcesosController')
 const controlVidriosController = require('../controllers/controlVidriosController')
 const descongelamientoController = require('../controllers/descongelamientoController')
@@ -14,7 +19,8 @@ const flashIncidenteController = require('../controllers/flashIncidenteControlle
 const InformeIntAccidenteController = require('../controllers/informeIntAccidenteController')
 const planillaArmadoController = require('../controllers/planillaArmadoController')
 const recepcionController = require('../controllers/recepcionController')
-const recuperacionProductoController = require('../controllers/recuperacionProducto')
+const recuperacionProductoController = require('../controllers/recuperacionProductoController')
+const registroCapacitacionController = require('../controllers/registroCapacitacionController')
 const registroDecomisoController = require('../controllers/registroDecomisoController')
 const registroSimulacroController = require('../controllers/registroSimulacroController')
 const reporteRechazoController = require('../controllers/reporteRechazoController')
@@ -24,11 +30,6 @@ const servicioEnLineaController = require('../controllers/servicioEnLineaControl
 const usoCambioAceiteController = require('../controllers/usoCambioAceiteController')
 const verificacionBalanzaController = require('../controllers/verificacionBalanzaController')
 const verificacionTermometrosController = require('../controllers/verificacionTermometrosController')
-const chequeoEppController = require('../controllers/ChequeoEppController')
-const controlAlergenosController = require('../controllers/ControlAlergenosController')
-const controlCloroController = require('../controllers/controlCloroController')
-const controlEquipoFrioController = require('../controllers/controlEquipoFrioController')
-const registroCapacitacionController = require('../controllers/registroCapacitacionController')
 require('../config/passport')
 
 // User
@@ -47,13 +48,13 @@ router.route('/business/:id')
 router.route('/login/ls')
     .post(passport.authenticate('jwt', { session: false }), userController.logFromLStorage)
 
-    // Password
+// Password
 
 router.route('/forgotpassword')
-.post(userController.forgotPassword)
+    .post(userController.forgotPassword)
 
 router.route('/forgotpassword/:token')
-.post(userController.actualizarPassword)
+    .post(userController.actualizarPassword)
 
 // Carga
 router.route('/carga')

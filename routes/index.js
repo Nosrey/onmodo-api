@@ -4,7 +4,7 @@ const passport = require('passport')
 
 const userController = require('../controllers/userController')
 const cargaController = require('../controllers/cargaController')
-// const chequeoEppController = require('../controllers/ChequeoEppController')
+const chequeoEppController = require('../controllers/chequeoEppController')
 const controlAlergenosController = require('../controllers/controlAlergenosController')
 const controlCloroController = require('../controllers/controlCloroController')
 const controlEquipoFrioController = require('../controllers/controlEquipoFrioController')
@@ -62,8 +62,8 @@ router.route('/carga')
 
 
 // ChequeoEpp
-// router.route('/chequeoepp')
-//     .post(chequeoEppController.newChequeo)
+router.route('/chequeoepp')
+    .post(chequeoEppController.newChequeo)
 
 // Control Alergenos 
 router.route('/controlalergenos')

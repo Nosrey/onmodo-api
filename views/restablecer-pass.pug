@@ -1,0 +1,17 @@
+doctype html
+html(lang="en")
+    head
+        meta(charset="UTF-8")
+        meta(http-equiv="X-UA-Compatible", content="IE=edge")
+        meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        style 
+            include ./email.css
+    body 
+        h3 Restablece tu contraseña 🔐
+        p Hola, has solicitado restablecer tu contraseña, haz click en el siguiente enlace para restablecerla: 
+        a(href=`${resetUrl}`) Cambia la contraseña
+        br
+        p O copia y pega este token en tu aplicación: #{token}
+        p Si no solicitaste este email, puedes ignorarlo.
+        br
+        p.footer ONMODO

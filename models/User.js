@@ -1,0 +1,50 @@
+const mongoose = require('mongoose')
+
+const userSchema = new mongoose.Schema({
+    email: { type: String },
+    fullName: { type: String, required: true },
+    legajo: { type: String, required: true },
+    number: { type: String, required: true },
+    puesto: { type: String },
+    contratoComedor: { type: String },
+    rol: { type: Number, required: true },
+    business: { type: String, lowercase: true },
+    provincia: { type: String },
+    localidad: { type: String },
+    idChief: { type: String },
+    password: { type: String },
+    token: { type: String },
+    expirated: { type: Date },
+    carga: [{ type: mongoose.Schema.ObjectId, ref: "carga" }],
+    chequeoepp: [{ type: mongoose.Schema.ObjectId, ref: 'chequeoepp' }],
+    controlalergenos: [{ type: mongoose.Schema.ObjectId, ref: 'controlalergenos' }],
+    controlcloro: [{ type: mongoose.Schema.ObjectId, ref: 'controlcloro' }],
+    controlequipofrio: [{ type: mongoose.Schema.ObjectId, ref: 'controlequipofrio' }],
+    controlproceso: [{ type: mongoose.Schema.ObjectId, ref: 'controlproceso' }],
+    controlvidrio: [{ type: mongoose.Schema.ObjectId, ref: 'controlvidrio' }],
+    descongelamiento: [{ type: mongoose.Schema.ObjectId, ref: 'descongelamiento' }],
+    despachoproduccion: [{ type: mongoose.Schema.ObjectId, ref: 'despachoproduccion' }],
+    distribucion: [{ type: mongoose.Schema.ObjectId, ref: 'distribucion' }],
+    entregabidones: [{ type: mongoose.Schema.ObjectId, ref: 'entregabidones' }],
+    entregaropa: [{ type: mongoose.Schema.ObjectId, ref: 'entregaropa' }],
+    flashincidente: [{ type: mongoose.Schema.ObjectId, ref: 'flashincidente' }],
+    informeintaccidente: [{ type: mongoose.Schema.ObjectId, ref: 'informeintaccidente' }],
+    planillaarmado: [{ type: mongoose.Schema.ObjectId, ref: 'planillaarmado' }],
+    recepcion: [{ type: mongoose.Schema.ObjectId, ref: 'recepcion' }],
+    recuperacionproducto: [{ type: mongoose.Schema.ObjectId, ref: 'recuperacionproducto' }],
+    registrocapacitacion: [{ type: mongoose.Schema.ObjectId, ref: 'registrocapacitacion' }],
+    registrodecomiso: [{ type: mongoose.Schema.ObjectId, ref: 'registrodecomiso' }],
+    registrosimulacro: [{ type: mongoose.Schema.ObjectId, ref: 'registrosimulacro' }],
+    reporterechazo: [{ type: mongoose.Schema.ObjectId, ref: 'reporterechazo' }],
+    saludmanipuladores: [{ type: mongoose.Schema.ObjectId, ref: 'saludmanipuladores' }],
+    sanitizacion: [{ type: mongoose.Schema.ObjectId, ref: 'sanitizacion' }],
+    servicioenlinea: [{ type: mongoose.Schema.ObjectId, ref: 'servicioenlinea' }],
+    usocambioaceite: [{ type: mongoose.Schema.ObjectId, ref: 'usocambioaceite' }],
+    verificacionbalanza: [{ type: mongoose.Schema.ObjectId, ref: 'verificacionbalanza' }],
+    verificaciontermometros: [{ type: mongoose.Schema.ObjectId, ref: 'verificaciontermometros' }],
+
+}, { timestamps: true })
+
+const User = mongoose.model('user', userSchema)
+
+module.exports = User

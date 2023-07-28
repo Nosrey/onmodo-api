@@ -19,7 +19,6 @@ const userController = {
 
         if (errors.length === 0) {
             const passRandom = randomstring.generate(8); // Generar una contraseña aleatoria de 8 caracteres
-            // const passwordHashed = bcryptjs.hashSync(password, 10);
 
             var newUser = new User({
                 email,
@@ -36,42 +35,32 @@ const userController = {
                 idChief
             });
 
-
-
-
             var newUserSaved = await newUser.save();
-            var token = jwt.sign({ ...newUserSaved }, process.env.SECRET_KEY, {});
 
-            token = crypto.randomBytes(20).toString('hex')
-            newUserSaved.expirated = Date.now() + 600;
-
-
-            const resetUrl = `http://localhost:3000/forgotpassword/${token}`
-
-
-            await enviarMail.enviarRegister({
-                emailExists: newUserSaved.email,
-                subject: 'Tu cuenta fue creada! Cambia tu contraseña.',
-                resetUrl,
-                token,
-                archivo: 'restablecer-pass'
-
-            })
-
-            return res.json({
-                success: true,
-                password: passRandom, // Agregar la contraseña generada en la respuesta
-                token,
-                provincia: newUserSaved.provincia,
-                localidad: newUserSaved.localidad,
-                rol: newUserSaved.rol,
-                fullName: newUserSaved.fullName,
-                number: newUserSaved.number,
-                legajo: newUserSaved.legajo,
-                email: newUserSaved.email,
-                business: newUserSaved.business,
-                puesto: newUserSaved.puesto,
-            });
+            // Call the forgotPassword function and handle the response
+            const forgotPasswordResult = await userController.forgotPassword(req, res);
+            if (forgotPasswordResult.success) {
+                return res.json({
+                    success: true,
+                    password: passRandom,
+                    provincia: newUserSaved.provincia,
+                    localidad: newUserSaved.localidad,
+                    rol: newUserSaved.rol,
+                    fullName: newUserSaved.fullName,
+                    number: newUserSaved.number,
+                    legajo: newUserSaved.legajo,
+                    email: newUserSaved.email,
+                    business: newUserSaved.business,
+                    puesto: newUserSaved.puesto,
+                });
+            } else {
+                // Handle the error if forgotPassword function fails
+                return res.json({
+                    success: false,
+                    errors: [forgotPasswordResult.message], // Assuming the message contains the error details
+                    response: null
+                });
+            }
         }
 
         return res.json({
@@ -103,7 +92,7 @@ const userController = {
             }
 
             var token = jwt.sign({ ...userExists }, process.env.SECRET_KEY, {})
-            return res.json({ success: true, response: { idChief: userExists.idChief,business: userExists.business, fullName: userExists.fullName, number: userExists.number, localidad: userExists.localidad, provincia: userExists.provincia, legajo: userExists.legajo, email: userExists.email, token, id: userExists._id, rol: userExists.rol, contratoComedor: userExists.contratoComedor, puesto: userExists.puesto } })
+            return res.json({ success: true, response: { idChief: userExists.idChief, business: userExists.business, fullName: userExists.fullName, number: userExists.number, localidad: userExists.localidad, provincia: userExists.provincia, legajo: userExists.legajo, email: userExists.email, token, id: userExists._id, rol: userExists.rol, contratoComedor: userExists.contratoComedor, puesto: userExists.puesto } })
         } catch (error) {
             // Manejo de errores
             console.error(error)
@@ -145,36 +134,36 @@ const userController = {
     },
 
     forgotPassword: async (req, res) => {
-        const { email } = req.body
+        const { email } = req.body;
 
-        const emailExists = await User.findOne({ email: email })
+        const emailExists = await User.findOne({ email: email });
 
         if (!emailExists) {
-            res.json({ success: false, response: 'Este correo no se encuentra' })
+            return { success: false, message: 'Este correo no se encuentra' };
         } else {
             try {
-                emailExists.token = crypto.randomBytes(20).toString('hex')
+                emailExists.token = crypto.randomBytes(20).toString('hex');
                 emailExists.expirated = Date.now() + 600;
 
-                await emailExists.save()
+                await emailExists.save();
 
-                const resetUrl = `http://localhost:3000/restablecer-contrasena/${emailExists.token}`
+                const resetUrl = `http://localhost:3000/restablecer-contrasena/${emailExists.token}`;
+                const newToken = emailExists.token
 
                 await enviarMail.enviar({
                     emailExists,
                     subject: 'Establece tu contraseña',
                     resetUrl,
+                    newToken,
                     archivo: 'restablecer-pass'
+                });
 
-                })
-                return res.json({ success: true, message: 'Email enviado!' })
+                return { success: true, message: 'Email enviado!' };
             } catch (error) {
-                res.json({ success: false, response: error })
-                console.log(error)
+                console.error(error);
+                return { success: false, message: error.message };
             }
         }
-
-
     },
 
 

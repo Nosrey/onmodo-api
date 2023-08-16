@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema({
     legajo: { type: String, required: true },
     number: { type: String, required: true },
     puesto: { type: String },
+    imgProfile:{type:String},
     contratoComedor: { type: String },
     rol: { type: Number, required: true },
     business: { type: String, lowercase: true },

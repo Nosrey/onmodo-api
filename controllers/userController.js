@@ -5,70 +5,125 @@ const bcrypt = require("bcryptjs/dist/bcrypt")
 const randomstring = require('randomstring');
 const bcryptjs = require('bcryptjs');
 const enviarMail = require('../handlers/email.js')
+const aws = require("aws-sdk");
+const multer = require("multer");
+const multerS3 = require("multer-s3");
 
-
-const userController = {
-    register: async (req, res) => {
-        var errors = [];
-        const { email, business, rol, fullName, number, legajo, puesto, provincia, localidad, contratoComedor, idChief } = req.body;
-        const emailExists = await User.findOne({ email: email });
-
-        if (emailExists) {
-            errors.push("El usuario ya existe");
-        }
-
-        if (errors.length === 0) {
-            const passRandom = randomstring.generate(8); // Generar una contraseña aleatoria de 8 caracteres
-
-            var newUser = new User({
-                email,
-                password: passRandom,
-                business,
-                puesto,
-                rol,
-                fullName,
-                number,
-                legajo,
-                provincia,
-                localidad,
-                contratoComedor,
-                idChief
-            });
-
-            var newUserSaved = await newUser.save();
-
-            // Call the forgotPassword function and handle the response
-            const forgotPasswordResult = await userController.forgotPassword(req, res);
-            if (forgotPasswordResult.success) {
-                return res.json({
-                    success: true,
-                    password: passRandom,
-                    provincia: newUserSaved.provincia,
-                    localidad: newUserSaved.localidad,
-                    rol: newUserSaved.rol,
-                    fullName: newUserSaved.fullName,
-                    number: newUserSaved.number,
-                    legajo: newUserSaved.legajo,
-                    email: newUserSaved.email,
-                    business: newUserSaved.business,
-                    puesto: newUserSaved.puesto,
-                });
-            } else {
-                // Handle the error if forgotPassword function fails
-                return res.json({
-                    success: false,
-                    errors: [forgotPasswordResult.message], // Assuming the message contains the error details
-                    response: null
-                });
-            }
-        }
-
-        return res.json({
-            success: false,
-            errors: errors,
-            response: null
+aws.config.update({
+    accessKeyId: "AKIAV7USSIUL37JS7UEK",
+    secretAccessKey: "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"
+  });
+  
+  const s3 = new aws.S3();
+  const upload = multer({
+    storage: multerS3({
+      s3: s3,
+      bucket: "perfil-onmodo",
+  
+      key: (req, file, cb) => {
+        crypto.randomBytes(16, (err, hash) => {
+          if (err) cb(err, hash);
+          const fileName = `${hash.toString('hex')}`;
+          cb(null, fileName);
         });
-    },
+      }
+    })
+  });
+const userController = {
+    
+    register: async (req, res) => {
+        const uploadPromise = new Promise((resolve, reject) => {
+          upload.single("imgProfile")(req, res, (err) => {
+            if (err) {
+              console.log(err);
+              reject(err);
+            } else {
+              resolve();
+            }
+          });
+        });
+    
+        try {
+          await uploadPromise; // Wait for image upload to complete
+          const {
+            email,
+            business,
+            rol,
+            fullName,
+            number,
+            legajo,
+            puesto,
+            provincia,
+            localidad,
+            contratoComedor,
+            idChief
+          } = req.body;
+    
+          // Check if the email already exists
+          const emailExists = await User.findOne({ legajo: legajo });
+    
+          if (emailExists) {
+            return res.json({
+              success: false,
+              errors: ["El usuario ya existe"],
+              response: null
+            });
+          }
+    
+          if (!req.file || !req.file.location) {
+            throw new Error("No se ha proporcionado una imagen válida.");
+          }
+    
+          const passRandom = randomstring.generate(8); // Generate a random 8-character password
+    
+          const newUser = new User({
+            email,
+            password: passRandom,
+            business,
+            puesto,
+            rol,
+            fullName,
+            number,
+            legajo,
+            provincia,
+            localidad,
+            contratoComedor,
+            idChief,
+            imgProfile: req.file.location // Set the profile image URL from S3
+          });
+    
+          const newUserSaved = await newUser.save();
+    
+          // Call the forgotPassword function and handle the response
+          const forgotPasswordResult = await userController.forgotPassword(req, res);
+          if (forgotPasswordResult.success) {
+            return res.json({
+              success: true,
+              password: passRandom,
+              provincia: newUserSaved.provincia,
+              localidad: newUserSaved.localidad,
+              rol: newUserSaved.rol,
+              fullName: newUserSaved.fullName,
+              number: newUserSaved.number,
+              legajo: newUserSaved.legajo,
+              email: newUserSaved.email,
+              business: newUserSaved.business,
+              puesto: newUserSaved.puesto,
+              imgProfile: newUserSaved.imgProfile
+            });
+          } else {
+            // Handle the error if the forgotPassword function fails
+            return res.json({
+              success: false,
+              errors: [forgotPasswordResult.message], // Assuming the message contains the error details
+              response: null
+            });
+          }
+        } catch (error) {
+          console.log(error);
+          return res.json({ success: false, error: error });
+        }
+      },
     login: async (req, res) => {
         try {
             const { legajo, password } = req.body

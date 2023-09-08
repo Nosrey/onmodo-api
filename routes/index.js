@@ -61,9 +61,13 @@ router.route('/carga')
     .post(cargaController.newCarga)
 router.route('/carga/:id')
     .delete(cargaController.deleteForm)
-
-
-
+router.route('/carga/:userId')
+    .get(cargaController.getFormsByUserIdAndStatus)
+router.route('/carga/:formId')
+    .put(cargaController.editFormProperties)
+router.route('/cargaedit/:formId')
+    .put(cargaController.editFormById)
+    
 // ChequeoEpp
 router.route('/chequeoepp')
     .post(chequeoEppController.newChequeo)

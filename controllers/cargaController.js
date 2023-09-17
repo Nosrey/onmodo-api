@@ -24,6 +24,8 @@ const cargaController = {
         wasEdited: req.body.wasEdited,
         dateLastEdition: req.body.dateLastEdition,
         motivo: req.body.motivo,
+        motivoPeticion: req.body.motivoPeticion,
+        motivoRespuesta: req.body.motivoRespuesta,
         whoApproved: req.body.whoApproved,
         idUser: req.body.idUser
       });
@@ -79,8 +81,8 @@ const cargaController = {
   editFormProperties: async (req, res) => {
     try {
       const formId = req.params.formId; // Obtener el ID del formulario a editar desde los parámetros de la solicitud
-      const { status, motivo, editEnabled, whoApproved } = req.body; // Obtener las propiedades a modificar desde el cuerpo de la solicitud
-  
+      const { status, motivo, motivoRespuesta, motivoPeticion, editEnabled, whoApproved } = req.body; // Obtener las propiedades a modificar desde el cuerpo de la solicitud
+
       // Crear un objeto con las propiedades a modificar
       const updatedProperties = {};
       if (status !== undefined) {
@@ -89,30 +91,36 @@ const cargaController = {
       if (motivo !== undefined) {
         updatedProperties.motivo = motivo;
       }
+      if (motivoRespuesta !== undefined) {
+        updatedProperties.motivoRespuesta = motivoRespuesta;
+      }
+      if (motivoPeticion !== undefined) {
+        updatedProperties.motivoPeticion = motivoPeticion;
+      }
       if (typeof editEnabled === 'boolean') {
         updatedProperties.editEnabled = editEnabled;
       }
       if (whoApproved !== undefined) {
         updatedProperties.whoApproved = whoApproved;
       }
-  
+
       // Actualizar el formulario utilizando findByIdAndUpdate con $set
       const updatedForm = await Carga.findByIdAndUpdate(
         formId,
         { $set: updatedProperties },
         { new: true }
       );
-  
+
       if (!updatedForm) {
         return res.status(404).send({ message: "Form not found" });
       }
-  
+
       // Actualizar las propiedades correspondientes en el modelo User
       const user = await User.findOne({ _id: updatedForm.idUser });
       if (!user) {
         return res.status(404).send({ message: "User not found" });
       }
-  
+
       // Actualizar el formulario dentro de la lista de cargas del usuario
       const cargaIndex = user.carga.findIndex((c) => c._id.toString() === formId);
       if (cargaIndex !== -1) {
@@ -122,22 +130,28 @@ const cargaController = {
         if (motivo !== undefined) {
           user.carga[cargaIndex].motivo = motivo;
         }
+        if (motivoRespuesta !== undefined) {
+          user.carga[cargaIndex].motivoRespuesta = motivoRespuesta;
+        }
+        if (motivoPeticion !== undefined) {
+          user.carga[cargaIndex].motivoPeticion = motivoPeticion;
+        }
         if (typeof editEnabled === 'boolean') {
           user.carga[cargaIndex].editEnabled = editEnabled;
         }
         if (whoApproved !== undefined) {
           user.carga[cargaIndex].whoApproved = whoApproved;
         }
-  
+
         await user.save();
       }
-  
+
       return res.status(200).send({ message: "Form properties updated successfully", updatedForm });
     } catch (error) {
       return res.status(500).send({ error: error.message });
     }
   },
-  
+
 
 
 

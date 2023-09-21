@@ -12,7 +12,6 @@ const cargaSchema = new mongoose.Schema({
     inputs: { type: Array },
     verified: { type: String },
     fechaHora: { type: String },
-
     status: { type: String, default: "" },
     editEnabled: { type: Boolean },
     wasEdited: { type: Boolean },
@@ -20,7 +19,6 @@ const cargaSchema = new mongoose.Schema({
     motivo: { type: String },
     motivoPeticion: { type: String },
     motivoRespuesta: { type: String },
-
     whoApproved: { type: String },
 
     idUser: [{ type: mongoose.Schema.ObjectId, ref: "user" }]

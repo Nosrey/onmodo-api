@@ -21,6 +21,14 @@ const flashIncidenteSchema = new mongoose.Schema({
     /* asesor: { type: Array },
     supervisor: { type: Array },
     gerente: { type: Array }, */
+    status: { type: String, default: "" },
+    editEnabled: { type: Boolean },
+    wasEdited: { type: Boolean },
+    dateLastEdition: { type: String },
+    motivo: { type: String },
+    motivoPeticion: { type: String },
+    motivoRespuesta: { type: String },
+    whoApproved: { type: String },
     date: { type: String, required: false },
     idUser: [{ type: mongoose.Schema.ObjectId, ref: "user" }]
 

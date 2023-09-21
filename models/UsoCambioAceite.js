@@ -1,14 +1,16 @@
 const mongoose = require('mongoose')
 
 const usoCambioAceiteSchema = new mongoose.Schema({
-    mes: { type: String},
-    uso: { type: Array},
-    filtracion: { type: Array},
-    cambioAceite: { type: Array},
-    limpieza: { type: Array},
-    responsable: { type: Array},
-    observaciones:{type:String},
-    date: { type: String, required: false },
+    inputs: { type: Array },
+    status: { type: String, default: "" },
+    observaciones: { type: String },
+    editEnabled: { type: Boolean },
+    wasEdited: { type: Boolean },
+    dateLastEdition: { type: String },
+    motivo: { type: String },
+    motivoPeticion: { type: String },
+    motivoRespuesta: { type: String },
+    whoApproved: { type: String },
     idUser: [{ type: mongoose.Schema.ObjectId, ref: "user" }]
 
 }, { timestamps: true })

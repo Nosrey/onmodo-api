@@ -92,6 +92,7 @@ const userController = {
             imgProfile: req.file.location // Set the profile image URL from S3
           });
     
+          console.log(newUser)
           const newUserSaved = await newUser.save();
     
           // Call the forgotPassword function and handle the response

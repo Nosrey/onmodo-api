@@ -30,6 +30,7 @@ const servicioEnLineaController = require('../controllers/servicioEnLineaControl
 const usoCambioAceiteController = require('../controllers/usoCambioAceiteController')
 const verificacionBalanzaController = require('../controllers/verificacionBalanzaController')
 const verificacionTermometrosController = require('../controllers/verificacionTermometrosController')
+const editionController = require('../controllers/editionController')
 require('../config/passport')
 
 // User
@@ -381,5 +382,10 @@ router.route('/verificaciontermometros/:formId')
 router.route('/verificaciontermometrosedit/:formId')
     .put(verificacionTermometrosController.editFormById)
 
+
+// Edition 
+
+router.route('/pendingedition')
+    .get(editionController.getFilteredData)
 
 module.exports = router

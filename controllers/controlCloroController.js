@@ -9,8 +9,6 @@ const controlCloroController = {
     try {
       const newControlCloro = new ControlCloro({
         inputs: req.body.inputs,
-        verified: req.body.verified,
-        date: req.body.date,
         status: req.body.status,
         editEnabled: req.body.editEnabled,
         wasEdited: req.body.wasEdited,
@@ -19,6 +17,9 @@ const controlCloroController = {
         motivoPeticion: req.body.motivoPeticion,
         motivoRespuesta: req.body.motivoRespuesta,
         whoApproved: req.body.whoApproved,
+        rol:req.body.rol,
+        nombre:req.body.nombre,
+        businessName:req.body.businessName,
         idUser: req.body.idUser
       });
       var id = newControlCloro._id

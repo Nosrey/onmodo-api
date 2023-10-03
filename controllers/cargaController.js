@@ -27,6 +27,9 @@ const cargaController = {
         motivoPeticion: req.body.motivoPeticion,
         motivoRespuesta: req.body.motivoRespuesta,
         whoApproved: req.body.whoApproved,
+        rol: req.body.rol,
+        nombre: req.body.nombre,
+        businessName: req.body.businessName,
         idUser: req.body.idUser
       });
       var id = newCarga._id

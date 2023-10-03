@@ -111,33 +111,119 @@ const editionController = {
 
             // Realiza la consulta para encontrar usuarios con los valores de "business" y "rol" especificados
             const users = await User.find({ business: businessValue, rol: rolValue })
-                // .populate('carga')
-                // .populate('chequeoepp')
-                // .populate('controlalergenos')
-                // .populate('controlcloro')
-                // .populate('controlequipofrio')
-                // .populate('controlproceso')
-                // .populate('controlvidrio')
-                // .populate('descongelamiento')
-                // .populate('despachoproduccion')
-                // .populate('distribucion')
-                // .populate('entregabidones')
-                // .populate('entregaropa')
-                // .populate('flashincidente')
-                // .populate('informeintaccidente')
-                // .populate('planillaarmado')
-                // .populate('recepcion')
-                // .populate('recuperacionproducto')
-                // .populate('registrocapacitacion')
-                // .populate('registrodecomiso')
-                // .populate('registrosimulacro')
-                // .populate('reporterechazo')
-                // .populate('saludmanipuladores')
-                // .populate('sanitizacion')
-                // .populate('servicioenlinea')
-                // .populate('usocambioaceite')
-                // .populate('verificacionbalanza')
-                // .populate('verificaciontermometros')
+                .populate('carga')
+                .populate('chequeoepp')
+                .populate('controlalergenos')
+                .populate('controlcloro')
+                .populate('controlequipofrio')
+                .populate('controlproceso')
+                .populate('controlvidrio')
+                .populate('descongelamiento')
+                .populate('despachoproduccion')
+                .populate('distribucion')
+                .populate('entregabidones')
+                .populate('entregaropa')
+                .populate('flashincidente')
+                .populate('informeintaccidente')
+                .populate('planillaarmado')
+                .populate('recepcion')
+                .populate('recuperacionproducto')
+                .populate('registrocapacitacion')
+                .populate('registrodecomiso')
+                .populate('registrosimulacro')
+                .populate('reporterechazo')
+                .populate('saludmanipuladores')
+                .populate('sanitizacion')
+                .populate('servicioenlinea')
+                .populate('usocambioaceite')
+                .populate('verificacionbalanza')
+                .populate('verificaciontermometros')
+            // Envía la respuesta con los datos filtrados
+            res.json(users);
+        } catch (error) {
+            // Maneja errores aquí
+            console.error(error);
+            res.status(500).json({ error: 'Error al obtener datos filtrados' });
+        }
+    },
+
+    async dataUserRol2_3(req, res) {
+        try {
+            // Obtener los valores de "business" y "rol" de los parámetros de la solicitud
+            const businessValue = req.params.business;
+
+            // Realiza la consulta para encontrar usuarios con los valores de "business" y "rol" especificados
+            const users = await User.find({ business: businessValue, rol: { $in: [1, 2] } })
+                .populate('carga')
+                .populate('chequeoepp')
+                .populate('controlalergenos')
+                .populate('controlcloro')
+                .populate('controlequipofrio')
+                .populate('controlproceso')
+                .populate('controlvidrio')
+                .populate('descongelamiento')
+                .populate('despachoproduccion')
+                .populate('distribucion')
+                .populate('entregabidones')
+                .populate('entregaropa')
+                .populate('flashincidente')
+                .populate('informeintaccidente')
+                .populate('planillaarmado')
+                .populate('recepcion')
+                .populate('recuperacionproducto')
+                .populate('registrocapacitacion')
+                .populate('registrodecomiso')
+                .populate('registrosimulacro')
+                .populate('reporterechazo')
+                .populate('saludmanipuladores')
+                .populate('sanitizacion')
+                .populate('servicioenlinea')
+                .populate('usocambioaceite')
+                .populate('verificacionbalanza')
+                .populate('verificaciontermometros')
+            // Envía la respuesta con los datos filtrados
+            res.json(users);
+        } catch (error) {
+            // Maneja errores aquí
+            console.error(error);
+            res.status(500).json({ error: 'Error al obtener datos filtrados' });
+        }
+    },
+
+    async dataUserRol1_2_3(req, res) {
+        try {
+            // Obtener los valores de "business" y "rol" de los parámetros de la solicitud
+            const businessValue = req.params.business;
+
+            // Realiza la consulta para encontrar usuarios con los valores de "business" y "rol" especificados
+            const users = await User.find({ business: businessValue, rol: { $in: [1, 2, 3] } })
+                .populate('carga')
+                .populate('chequeoepp')
+                .populate('controlalergenos')
+                .populate('controlcloro')
+                .populate('controlequipofrio')
+                .populate('controlproceso')
+                .populate('controlvidrio')
+                .populate('descongelamiento')
+                .populate('despachoproduccion')
+                .populate('distribucion')
+                .populate('entregabidones')
+                .populate('entregaropa')
+                .populate('flashincidente')
+                .populate('informeintaccidente')
+                .populate('planillaarmado')
+                .populate('recepcion')
+                .populate('recuperacionproducto')
+                .populate('registrocapacitacion')
+                .populate('registrodecomiso')
+                .populate('registrosimulacro')
+                .populate('reporterechazo')
+                .populate('saludmanipuladores')
+                .populate('sanitizacion')
+                .populate('servicioenlinea')
+                .populate('usocambioaceite')
+                .populate('verificacionbalanza')
+                .populate('verificaciontermometros')
             // Envía la respuesta con los datos filtrados
             res.json(users);
         } catch (error) {

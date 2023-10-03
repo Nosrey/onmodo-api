@@ -30,6 +30,9 @@ const flashIncidenteSchema = new mongoose.Schema({
     motivoRespuesta: { type: String },
     whoApproved: { type: String },
     date: { type: String, required: false },
+    rol: { type: String },
+    nombre:{ type: String },
+    businessName:{ type: String },
     idUser: [{ type: mongoose.Schema.ObjectId, ref: "user" }]
 
 }, { timestamps: true })

@@ -8,9 +8,6 @@ const controlVidriosController = {
     try {
       const newControlVidrios = new ControlVidrios({
         inputs: req.body.inputs,
-        inputsTwo: req.body.inputsTwo,
-        verified: req.body.verified,
-        date: req.body.date,
         status: req.body.status,
         editEnabled: req.body.editEnabled,
         wasEdited: req.body.wasEdited,
@@ -19,6 +16,9 @@ const controlVidriosController = {
         motivoPeticion: req.body.motivoPeticion,
         motivoRespuesta: req.body.motivoRespuesta,
         whoApproved: req.body.whoApproved,
+        rol: req.body.rol,
+        nombre: req.body.nombre,
+        businessName: req.body.businessName,
         idUser: req.body.idUser
       });
       var id = newControlVidrios._id

@@ -8,6 +8,9 @@ const usoCambioAceiteController = {
       const newUsoCambioAceite = new UsoCambioAceite({
         inputs: req.body.inputs,
         observaciones: req.body.observaciones,
+        rol: req.body.rol,
+        nombre: req.body.nombre,
+        businessName: req.body.businessName,
         idUser: req.body.idUser
       });
       var id = newUsoCambioAceite._id

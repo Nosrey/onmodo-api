@@ -10,6 +10,9 @@ const servicioEnLineaSchema = new mongoose.Schema({
     motivoPeticion: { type: String },
     motivoRespuesta: { type: String },
     whoApproved: { type: String },
+    rol: { type: String },
+    nombre:{ type: String },
+    businessName:{ type: String },
     idUser: [{ type: mongoose.Schema.ObjectId, ref: "user" }]
 
 }, { timestamps: true })

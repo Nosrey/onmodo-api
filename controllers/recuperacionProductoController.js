@@ -8,6 +8,9 @@ const recuperacionProductoController = {
     try {
       const newRecuperacionProducto = new RecuperacionProducto({
         values: req.body.values,
+        rol: req.body.rol,
+        nombre: req.body.nombre,
+        businessName: req.body.businessName,
         idUser: req.body.idUser
       });
       var id = newRecuperacionProducto._id

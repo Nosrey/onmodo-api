@@ -388,8 +388,13 @@ router.route('/verificaciontermometrosedit/:formId')
 router.route('/pendingedition')
     .get(editionController.getFilteredData)
 
-
 router.route('/rol1/:business')
     .get(editionController.dataUserRol1)
+
+router.route('/rol1-2/:business')
+    .get(editionController.dataUserRol2_3)
+
+router.route('/rol1-2-3/:business')
+    .get(editionController.dataUserRol1_2_3)
 
 module.exports = router

@@ -31,34 +31,37 @@ const VerificacionTermometros = require("../models/VerificacionTermometros");
 const editionController = {
     async getFilteredData(req, res) {
         try {
-            // Obtener registros del Modelo 1 con status no vacío
-            const carga = await Carga.find({ status: { $exists: true, $ne: '' } });
-            const chequeoEpp = await ChequeoEpp.find({ status: { $exists: true, $ne: '' } });
-            const controlalergenos = await ControlAlergenos.find({ status: { $exists: true, $ne: '' } });
-            const controlCloro = await ControlCloro.find({ status: { $exists: true, $ne: '' } });
-            const controlEquipoFrio = await ControlEquipoFrio.find({ status: { $exists: true, $ne: '' } });
-            const controlProcesos = await ControlProceso.find({ status: { $exists: true, $ne: '' } });
-            const controlVidrio = await ControlVidrio.find({ status: { $exists: true, $ne: '' } });
-            const descongelamiento = await Descongelamiento.find({ status: { $exists: true, $ne: '' } });
-            const despachoProduccion = await DespachoProduccion.find({ status: { $exists: true, $ne: '' } });
-            const distribucion = await Distribucion.find({ status: { $exists: true, $ne: '' } });
-            const entregaBidones = await EntregaBidones.find({ status: { $exists: true, $ne: '' } });
-            const entregaRopa = await EntregaRopa.find({ status: { $exists: true, $ne: '' } });
-            const flashIncidente = await FlashIncidente.find({ status: { $exists: true, $ne: '' } });
-            const informeIntAccidente = await InformeIntAccidente.find({ status: { $exists: true, $ne: '' } });
-            const planillaArmado = await PlanillaArmado.find({ status: { $exists: true, $ne: '' } });
-            const recepcion = await Recepcion.find({ status: { $exists: true, $ne: '' } });
-            const recuperacionProducto = await RecuperacionProducto.find({ status: { $exists: true, $ne: '' } });
-            const registroCapacitacion = await RegistroCapacitacion.find({ status: { $exists: true, $ne: '' } });
-            const registroDecomiso = await RegistroDecomiso.find({ status: { $exists: true, $ne: '' } });
-            const registrosimulacro = await RegistroSimulacro.find({ status: { $exists: true, $ne: '' } });
-            const reporteRechazo = await ReporteRechazo.find({ status: { $exists: true, $ne: '' } });
-            const saludManipuladores = await SaludManipuladores.find({ status: { $exists: true, $ne: '' } });
-            const sanitizacion = await Sanitizacion.find({ status: { $exists: true, $ne: '' } });
-            const servicioEnLinea = await ServicioEnLinea.find({ status: { $exists: true, $ne: '' } });
-            const usoCambioAceite = await UsoCambioAceite.find({ status: { $exists: true, $ne: '' } });
-            const verificacionBalanza = await VerificacionBalanza.find({ status: { $exists: true, $ne: '' } });
-            const verificacionTermometros = await VerificacionTermometros.find({ status: { $exists: true, $ne: '' } });
+            const businessName = req.params.businessName;
+
+            console.log(businessName)
+
+            const carga = await Carga.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const chequeoEpp = await ChequeoEpp.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const controlalergenos = await ControlAlergenos.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const controlCloro = await ControlCloro.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const controlEquipoFrio = await ControlEquipoFrio.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const controlProcesos = await ControlProceso.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const controlVidrio = await ControlVidrio.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const descongelamiento = await Descongelamiento.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const despachoProduccion = await DespachoProduccion.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const distribucion = await Distribucion.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const entregaBidones = await EntregaBidones.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const entregaRopa = await EntregaRopa.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const flashIncidente = await FlashIncidente.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const informeIntAccidente = await InformeIntAccidente.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const planillaArmado = await PlanillaArmado.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const recepcion = await Recepcion.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const recuperacionProducto = await RecuperacionProducto.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const registroCapacitacion = await RegistroCapacitacion.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const registroDecomiso = await RegistroDecomiso.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const registrosimulacro = await RegistroSimulacro.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const reporteRechazo = await ReporteRechazo.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const saludManipuladores = await SaludManipuladores.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const sanitizacion = await Sanitizacion.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const servicioEnLinea = await ServicioEnLinea.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const usoCambioAceite = await UsoCambioAceite.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const verificacionBalanza = await VerificacionBalanza.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
+            const verificacionTermometros = await VerificacionTermometros.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
 
 
             // Puedes hacer lo mismo para más modelos si es necesario
@@ -106,7 +109,7 @@ const editionController = {
     async dataUserRol1(req, res) {
         try {
             // Obtener los valores de "business" y "rol" de los parámetros de la solicitud
-            const businessValue = req.params.business;
+            const businessValue = req.params.businessName;
             const rolValue = 1; // Reemplaza con el valor de rol que desees filtrar
 
             // Realiza la consulta para encontrar usuarios con los valores de "business" y "rol" especificados
@@ -150,7 +153,7 @@ const editionController = {
     async dataUserRol2_3(req, res) {
         try {
             // Obtener los valores de "business" y "rol" de los parámetros de la solicitud
-            const businessValue = req.params.business;
+            const businessValue = req.params.businessName;
 
             // Realiza la consulta para encontrar usuarios con los valores de "business" y "rol" especificados
             const users = await User.find({ business: businessValue, rol: { $in: [1, 2] } })
@@ -193,7 +196,7 @@ const editionController = {
     async dataUserRol1_2_3(req, res) {
         try {
             // Obtener los valores de "business" y "rol" de los parámetros de la solicitud
-            const businessValue = req.params.business;
+            const businessValue = req.params.businessName;
 
             // Realiza la consulta para encontrar usuarios con los valores de "business" y "rol" especificados
             const users = await User.find({ business: businessValue, rol: { $in: [1, 2, 3] } })

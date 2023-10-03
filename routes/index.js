@@ -385,16 +385,16 @@ router.route('/verificaciontermometrosedit/:formId')
 
 // Edition 
 
-router.route('/pendingedition')
+router.route('/pendingedition/:businessName')
     .get(editionController.getFilteredData)
 
-router.route('/rol1/:business')
+router.route('/rol1/:businessName')
     .get(editionController.dataUserRol1)
 
-router.route('/rol1-2/:business')
+router.route('/rol1-2/:businessName')
     .get(editionController.dataUserRol2_3)
 
-router.route('/rol1-2-3/:business')
+router.route('/rol1-2-3/:businessName')
     .get(editionController.dataUserRol1_2_3)
 
 module.exports = router

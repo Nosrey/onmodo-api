@@ -7,12 +7,7 @@ const controlEquipoFrioController = {
   newControlEquipoFrio: async (req, res) => {
     try {
       const newControlEquipoFrio = new ControlEquipoFrio({
-        equipoNro: req.body.equipoNro,
-        checkboxes: req.body.checkboxes,
-        mes: req.body.mes,
-        turno: req.body.turno,
         inputs: req.body.inputs,
-        verified: req.body.verified,
         date: req.body.date,
         status: req.body.status,
         editEnabled: req.body.editEnabled,

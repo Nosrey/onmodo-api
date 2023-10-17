@@ -1,7 +1,6 @@
 const mongoose = require('mongoose')
 
 const distribucionSchema = new mongoose.Schema({
-    fecha: { type: String },
     inputs: { type: Array},
     verified: { type: String},
     date: { type: String, required: false },

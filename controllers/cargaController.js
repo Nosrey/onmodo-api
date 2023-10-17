@@ -8,16 +8,7 @@ const cargaController = {
   newCarga: async (req, res) => {
     try {
       const newCarga = new Carga({
-        patenteTermico: req.body.patenteTermico,
-        habSenasa: req.body.habSenasa,
-        nPrecintoLateral: req.body.nPrecintoLateral,
-        nPrecintoTrasero: req.body.nPrecintoTrasero,
-        respTermografo: req.body.respTermografo,
-        observacionesTermografo: req.body.observacionesTermografo,
-        respPrecinto: req.body.respPrecinto,
-        observacionesPrecinto: req.body.observacionesPrecinto,
         inputs: req.body.inputs,
-        verified: req.body.verified,
         fechaHora: req.body.fechaHora,
         status: req.body.status,
         editEnabled: req.body.editEnabled,

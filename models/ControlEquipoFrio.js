@@ -2,11 +2,7 @@ const mongoose = require('mongoose')
 
 const controlEquipoFrioSchema = new mongoose.Schema({
     equipoNro: { type: String },
-    checkboxes: { type: Array},
-    mes: { type: String},
-    turno: { type: String},
-    inputs: { type: Array},
-    verified: { type: String},
+    inputs: { type: Array },
     date: { type: String, required: false },
     status: { type: String, default: "" },
     editEnabled: { type: Boolean },
@@ -17,8 +13,8 @@ const controlEquipoFrioSchema = new mongoose.Schema({
     motivoRespuesta: { type: String },
     whoApproved: { type: String },
     rol: { type: String },
-    nombre:{ type: String },
-    businessName:{ type: String },
+    nombre: { type: String },
+    businessName: { type: String },
     idUser: [{ type: mongoose.Schema.ObjectId, ref: "user" }]
 
 }, { timestamps: true })

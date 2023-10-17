@@ -7,7 +7,6 @@ const distribucionController = {
   newDistribucion: async (req, res) => {
     try {
       const newDistribucion = new Distribucion({
-        fecha: req.body.fecha,
         inputs: req.body.inputs,
         verified: req.body.verified,
         date: req.body.date,

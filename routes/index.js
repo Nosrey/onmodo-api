@@ -31,6 +31,7 @@ const usoCambioAceiteController = require('../controllers/usoCambioAceiteControl
 const verificacionBalanzaController = require('../controllers/verificacionBalanzaController')
 const verificacionTermometrosController = require('../controllers/verificacionTermometrosController')
 const editionController = require('../controllers/editionController')
+const recordatorioController = require('../controllers/recordatorioController')
 require('../config/passport')
 
 // User
@@ -396,5 +397,18 @@ router.route('/rol1-2/:businessName')
 
 router.route('/rol1-2-3/:businessName')
     .get(editionController.dataUserRol1_2_3)
+
+
+// Recordatorio
+
+router.route('/recordatorio')
+    .post(recordatorioController.newRecordatorio)
+
+router.route('/recordatorio/:userId')
+    .get(recordatorioController.getRecordatoriosByUserId)
+
+router.route('/recordatorio/:recordatorioId')
+    .put(recordatorioController.editRecordatorio)
+    .delete(recordatorioController.deleteForm)
 
 module.exports = router

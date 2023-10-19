@@ -9,6 +9,7 @@ const recordatorioSchema = new mongoose.Schema({
     fechaInicio: { type: String },
     fechas: { type: Array },
     status: { type: String },
+    businessName: { type: String },
     idUser: [{ type: mongoose.Schema.ObjectId, ref: "user" }]
 
 }, { timestamps: true })

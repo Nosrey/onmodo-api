@@ -404,8 +404,8 @@ router.route('/rol1-2-3/:businessName')
 router.route('/recordatorio')
     .post(recordatorioController.newRecordatorio)
 
-router.route('/recordatorio/:userId')
-    .get(recordatorioController.getRecordatoriosByUserId)
+router.route('/recordatorio/:businessName')
+    .get(recordatorioController.getRecordatoriosByBusinessName)
 
 router.route('/recordatorio/:recordatorioId')
     .put(recordatorioController.editRecordatorio)

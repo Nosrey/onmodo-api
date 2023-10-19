@@ -15,6 +15,7 @@ const recordatorioController = {
                 fechaInicio: req.body.fechaInicio,
                 fechas: req.body.fechas,
                 status: req.body.status,
+                businessName:req.body.businessName,
                 idUser: req.body.idUser
             });
             var id = newRecordatorio._id
@@ -44,6 +45,21 @@ const recordatorioController = {
             );
 
             return res.status(200).send({ message: "Recordatorio deleted successfully" });
+        } catch (error) {
+            return res.status(500).send({ error: error.message });
+        }
+    },
+
+    getRecordatoriosByBusinessName: async (req, res) => {
+        try {
+            const businessName = req.params.businessName; // Obtener el nombre del negocio desde los parámetros de la solicitud
+            const recordatorios = await Recordatorio.find({ businessName: businessName });
+
+            if (!recordatorios) {
+                return res.status(404).send({ message: "No recordatorios found for this business name" });
+            }
+
+            return res.status(200).send({ recordatorios });
         } catch (error) {
             return res.status(500).send({ error: error.message });
         }

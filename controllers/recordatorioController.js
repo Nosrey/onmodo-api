@@ -15,7 +15,7 @@ const recordatorioController = {
                 fechaInicio: req.body.fechaInicio,
                 fechas: req.body.fechas,
                 status: req.body.status,
-                businessName:req.body.businessName,
+                businessName: req.body.businessName,
                 idUser: req.body.idUser
             });
             var id = newRecordatorio._id

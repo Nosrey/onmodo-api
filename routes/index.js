@@ -32,6 +32,7 @@ const verificacionBalanzaController = require('../controllers/verificacionBalanz
 const verificacionTermometrosController = require('../controllers/verificacionTermometrosController')
 const editionController = require('../controllers/editionController')
 const recordatorioController = require('../controllers/recordatorioController')
+const businessController = require('../controllers/BusinessController')
 require('../config/passport')
 
 // User
@@ -49,6 +50,12 @@ router.route('/business/:id')
 
 router.route('/login/ls')
     .post(passport.authenticate('jwt', { session: false }), userController.logFromLStorage)
+
+router.route('/:legajo/:business')
+    .delete(userController.deleteUserByLegajo)
+
+router.route('/newbusiness')
+    .post(businessController.newBusiness)
 
 // Password
 

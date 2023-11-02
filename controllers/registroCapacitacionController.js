@@ -1,47 +1,119 @@
 const RegistroCapacitacion = require("../models/RegistroCapacitacion");
 const User = require("../models/User");
+const crypto = require('crypto')
+const aws = require("aws-sdk");
+const multer = require("multer");
+const multerS3 = require("multer-s3");
 
+aws.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY,
+  secretAccessKey: process.env.AWS_SECRET_KEY
+});
 
+const s3 = new aws.S3();
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: "capacitacion-onmodo",
+
+    key: (req, file, cb) => {
+      crypto.randomBytes(16, (err, hash) => {
+        if (err) cb(err, hash);
+        const fileName = `${hash.toString('hex')}`;
+        cb(null, fileName);
+      });
+    }
+  })
+});
 const registroCapacitacionController = {
 
   newRegistroCapacitacion: async (req, res) => {
+    const uploadPromise = new Promise((resolve, reject) => {
+      upload.single("firma")(req, res, (err) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+
     try {
+      await uploadPromise; // Wait for image upload to complete
+      const {
+        fecha,
+        tiempoDuracion,
+        checkboxes,
+        temas,
+        materialEntregado,
+        materialExpuesto,
+        asistentes,
+        observaciones,
+        instructor,
+        cargo,
+        date,
+        status,
+        editEnabled,
+        wasEdited,
+        dateLastEdition,
+        motivo,
+        motivoPeticion,
+        motivoRespuesta,
+        whoApproved,
+        rol,
+        nombre,
+        businessName,
+        idUser
+      } = req.body;
+
+
+
+      if (!req.file || !req.file.location) {
+        throw new Error("No se ha proporcionado un archivo válido.");
+      }
+
+
       const newRegistroCapacitacion = new RegistroCapacitacion({
-        fecha: req.body.fecha,
-        tiempoDuracion: req.body.tiempoDuracion,
-        checkboxes: req.body.checkboxes,
-        temas: req.body.temas,
-        materialEntregado: req.body.materialEntregado,
-        materialExpuesto: req.body.materialExpuesto,
-        asistentes: req.body.asistentes,
-        observaciones: req.body.observaciones,
-        instructor: req.body.instructor,
-        cargo: req.body.cargo,
-        firma: req.body.firma,
-        date: req.body.date,
-        status: req.body.status,
-        editEnabled: req.body.editEnabled,
-        wasEdited: req.body.wasEdited,
-        dateLastEdition: req.body.dateLastEdition,
-        motivo: req.body.motivo,
-        motivoPeticion: req.body.motivoPeticion,
-        motivoRespuesta: req.body.motivoRespuesta,
-        whoApproved: req.body.whoApproved,
-        rol: req.body.rol,
-        nombre: req.body.nombre,
-        businessName: req.body.businessName,
-        idUser: req.body.idUser
+        fecha,
+        tiempoDuracion,
+        checkboxes,
+        temas,
+        materialEntregado,
+        materialExpuesto,
+        asistentes,
+        observaciones,
+        instructor,
+        cargo,
+        date,
+        status,
+        editEnabled,
+        wasEdited,
+        dateLastEdition,
+        motivo,
+        motivoPeticion,
+        motivoRespuesta,
+        whoApproved,
+        rol,
+        nombre,
+        businessName,
+        idUser,
+        firma: req.file.location // Set the profile image URL from S3
       });
       var id = newRegistroCapacitacion._id
       await User.findOneAndUpdate({ _id: req.body.idUser }, { $push: { registrocapacitacion: id } }, { new: true })
       await newRegistroCapacitacion.save();
+
       return res.status(200).send({ message: 'Registro Capacitacion successfully' });
 
-    } catch (error) {
-      return res.status(500).send({ error: error.message });
-    }
 
+    } catch (error) {
+      console.log(error);
+      return res.json({ success: false, error: error });
+    }
   },
+
+  
   deleteForm: async (req, res) => {
     try {
       const formId = req.params.id; // Obtener el ID del registro a eliminar desde los parámetros de la solicitud

@@ -10,8 +10,6 @@ const reporteRechazoSchema = new mongoose.Schema({
     diferencias: { type: Array},
     transporte: { type: Array},
     medidasTomadas: { type: Array},
-    nombreAdministrador:{type:String},
-    nombreProveedor:{type:String},
     date: { type: String, required: false },
     status: { type: String, default: "" },
     editEnabled: { type: Boolean },

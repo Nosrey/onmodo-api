@@ -8,7 +8,7 @@ const entregaRopaSchema = new mongoose.Schema({
     localidad: { type: String, },
     cp: { type: String, },
     provincia: { type: String, },
-    descripcion: { type: String },
+    descripcion: { type: String, },
     checkboxes: { type: Array, },
     inputs: { type: Array, },
     infoAdicional: { type: String },

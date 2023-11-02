@@ -16,8 +16,6 @@ const reporteRechazoController = {
         diferencias: req.body.diferencias,
         transporte: req.body.transporte,
         medidasTomadas: req.body.medidasTomadas,
-        nombreAdministrador: req.body.nombreAdministrador,
-        nombreProveedor: req.body.nombreProveedor,
         date: req.body.date,
         status: req.body.status,
         editEnabled: req.body.editEnabled,

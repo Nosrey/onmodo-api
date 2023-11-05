@@ -33,6 +33,7 @@ const verificacionTermometrosController = require('../controllers/verificacionTe
 const editionController = require('../controllers/editionController')
 const recordatorioController = require('../controllers/recordatorioController')
 const businessController = require('../controllers/BusinessController')
+const dietasEspecialesController = require('../controllers/dietasEspecialesController')
 require('../config/passport')
 
 // User
@@ -390,6 +391,9 @@ router.route('/verificaciontermometros/:formId')
 router.route('/verificaciontermometrosedit/:formId')
     .put(verificacionTermometrosController.editFormById)
 
+// Dietas especiales
+router.route('/dietasespeciales')
+    .post(dietasEspecialesController.newDietasEspeciales)
 
 // Edition 
 

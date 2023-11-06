@@ -6,7 +6,7 @@ const registroSimulacroSchema = new mongoose.Schema({
     localidad: { type: String, },
     fecha: { type: String, },
     personas: { type: Array },
-    firma: { type: String, },
+    firmaDoc: { type: String, },
     date: { type: String, required: false },
     status: { type: String, default: "" },
     editEnabled: { type: Boolean },

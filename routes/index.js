@@ -225,7 +225,7 @@ router.route('/flashincidenteedit/:formId')
 
 // Informe Int Accidente
 router.route('/informeintaccidente')
-    .post(InformeIntAccidenteController.newInformeIntAccidente)
+    .post(InformeIntAccidenteController.newInformeAccidente)
 router.route('/informeintaccidente/:id')
     .delete(InformeIntAccidenteController.deleteForm)
 router.route('/informeintaccidente/:userId')

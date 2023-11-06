@@ -5,37 +5,75 @@ const User = require("../models/User");
 const registroSimulacroController = {
 
   newRegistroSimulacro: async (req, res) => {
+    const uploadPromise = new Promise((resolve, reject) => {
+      upload.single("firmaDoc")(req, res, (err) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+
     try {
+      await uploadPromise; // Wait for image upload to complete
+      const {
+        razonSocial,
+        ubiacion,
+        localidad,
+        fecha,
+        personas,
+        date,
+        editEnabled,
+        wasEdited,
+        motivo,
+        motivoPeticion,
+        motivoRespuesta,
+        whoApproved,
+        rol,
+        nombre,
+        businessName,
+        idUser
+      } = req.body;
+
+
+
+      if (!req.file || !req.file.location) {
+        throw new Error("No se ha proporcionado un archivo válido.");
+      }
+
+
       const newRegistroSimulacro = new RegistroSimulacro({
-        razonSocial: req.body.razonSocial,
-        ubicacion: req.body.ubicacion,
-        localidad: req.body.localidad,
-        fecha: req.body.fecha,
-        personas: req.body.personas,
-        firma: req.body.firma,
-        date: req.body.date,
-        status: req.body.status,
-        editEnabled: req.body.editEnabled,
-        wasEdited: req.body.wasEdited,
-        dateLastEdition: req.body.dateLastEdition,
-        motivo: req.body.motivo,
-        motivoPeticion: req.body.motivoPeticion,
-        motivoRespuesta: req.body.motivoRespuesta,
-        whoApproved: req.body.whoApproved,
-        rol: req.body.rol,
-        nombre: req.body.nombre,
-        businessName: req.body.businessName,
-        idUser: req.body.idUser
+        razonSocial,
+        ubiacion,
+        localidad,
+        fecha,
+        personas,
+        date,
+        editEnabled,
+        wasEdited,
+        motivo,
+        motivoPeticion,
+        motivoRespuesta,
+        whoApproved,
+        rol,
+        nombre,
+        businessName,
+        idUser,
+        firmaDoc: req.file.location // Set the profile image URL from S3
       });
       var id = newRegistroSimulacro._id
       await User.findOneAndUpdate({ _id: req.body.idUser }, { $push: { registrosimulacro: id } }, { new: true })
       await newRegistroSimulacro.save();
-      return res.status(200).send({ message: 'Registro Simulacro successfully' });
+
+      return res.status(200).send({ message: 'Registro Simulacro create successfully' });
+
 
     } catch (error) {
-      return res.status(500).send({ error: error.message });
+      console.log(error);
+      return res.json({ success: false, error: error });
     }
-
   },
   deleteForm: async (req, res) => {
     try {

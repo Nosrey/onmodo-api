@@ -28,48 +28,42 @@ const upload = multer({
 const dietasEspecialesController = {
 
   newDietasEspeciales: async (req, res) => {
-    const uploadPromise = new Promise((resolve, reject) => {
-      upload.single("certificado")(req, res, (err) => {
-        if (err) {
-          console.log(err);
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    });
-
     try {
-      await uploadPromise; // Wait for image upload to complete
-      const {
-        comedor,
-        inputs,
-        date,
-        status,
-        editEnabled,
-        wasEdited,
-        dateLastEdition,
-        motivo,
-        motivoPeticion,
-        motivoRespuesta,
-        whoApproved,
-        rol,
-        nombre,
-        businessName,
-        idUser
-      } = req.body;
+      const { comedor, inputs, date, status, editEnabled, wasEdited, dateLastEdition, motivo, motivoPeticion, motivoRespuesta, whoApproved, rol, nombre, businessName, idUser } = req.body;
 
+      // Cargar archivos de certificado utilizando Multer-S3
+      const certificados = [];
 
+      for (let i = 0; i < inputs.length; i++) {
+        const input = inputs[i];
+        if (!input.certificado) {
+          throw new Error(`No se proporcionó un archivo válido en el objeto ${i + 1} del array "inputs".`);
+        }
 
-      if (!req.file || !req.file.location) {
-        throw new Error("No se ha proporcionado un archivo válido.");
+        const uploadPromise = new Promise((resolve, reject) => {
+          upload.single(`certificado_${i}`)(req, res, (err) => {
+            if (err) {
+              console.log(err);
+              reject(err);
+            } else {
+              resolve();
+            }
+          });
+        });
+
+        await uploadPromise; // Esperar a que se complete la carga del archivo
+
+        if (!req.file || !req.file.location) {
+          throw new Error(`La carga del archivo de certificado en el objeto ${i + 1} del array "inputs" no fue exitosa.`);
+        }
+
+        certificados.push({ url: req.file.location });
       }
 
-      const certificado = {}
-
+      // Crear el nuevo objeto DietasEspeciales con los certificados
       const newDietasEspeciales = new DietasEspeciales({
         comedor,
-        inputs: [certificado], // Add "certificado" to the "inputs" array
+        inputs: certificados, // Agregar los certificados al array "inputs"
         date,
         status,
         editEnabled,
@@ -85,16 +79,16 @@ const dietasEspecialesController = {
         idUser,
       });
 
-      var id = newDietasEspeciales._id
-      await User.findOneAndUpdate({ _id: req.body.idUser }, { $push: { registrocapacitacion: id } }, { new: true })
-      await newRegistroCapacitacion.save();
+      await newDietasEspeciales.save(); // Guardar el registro de DietasEspeciales en la base de datos
 
-      return res.status(200).send({ message: 'Registro Capacitacion successfully' });
+      var id = newDietasEspeciales._id;
+      await User.findOneAndUpdate({ _id: req.body.idUser }, { $push: { registrocapacitacion: id } }, { new: true });
 
+      return res.status(200).send({ message: 'Registro Capacitación creado exitosamente' });
 
     } catch (error) {
       console.log(error);
-      return res.json({ success: false, error: error });
+      return res.json({ success: false, error: error.message });
     }
   },
 

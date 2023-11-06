@@ -1,53 +1,123 @@
 const InformeIntAccidente = require("../models/InformeIntAccidente");
 const User = require("../models/User");
+const crypto = require('crypto')
+const aws = require("aws-sdk");
+const multer = require("multer");
+const multerS3 = require("multer-s3");
 
+aws.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY,
+  secretAccessKey: process.env.AWS_SECRET_KEY
+});
+
+const s3 = new aws.S3();
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: "informe-accidente-onmodo",
+
+    key: (req, file, cb) => {
+      crypto.randomBytes(16, (err, hash) => {
+        if (err) cb(err, hash);
+        const fileName = `${hash.toString('hex')}`;
+        cb(null, fileName);
+      });
+    }
+  })
+});
 
 const InformeIntAccidenteController = {
 
-  newInformeIntAccidente: async (req, res) => {
-    try {
-      const newInformeIntAccidente = new InformeIntAccidente({
-        comedor: req.body.comedor,
-        fecha: req.body.fecha,
-        tipo: req.body.tipo,
-        checkboxes: req.body.checkboxes,
-        nombreapellido: req.body.nombreapellido,
-        cuil: req.body.cuil,
-        fechaIngreso: req.body.fechaIngreso,
-        puesto: req.body.puesto,
-        hora: req.body.hora,
-        lugar: req.body.lugar,
-        descripcion: req.body.descripcion,
-        checkboxesAccidente: req.body.checkboxesAccidente,
-        razon: req.body.razon,
-        lugarLesion: req.body.lugarLesion,
-        medidas: req.body.medidas,
-        firmaEmpleado: req.body.firmaEmpleado,
-        FirmaAdm: req.body.FirmaAdm,
-        encargado: req.body.encargado,
-        date: req.body.date,
-        status: req.body.status,
-        editEnabled: req.body.editEnabled,
-        wasEdited: req.body.wasEdited,
-        dateLastEdition: req.body.dateLastEdition,
-        motivo: req.body.motivo,
-        motivoPeticion: req.body.motivoPeticion,
-        motivoRespuesta: req.body.motivoRespuesta,
-        whoApproved: req.body.whoApproved,
-        rol: req.body.rol,
-        nombre: req.body.nombre,
-        businessName: req.body.businessName,
-        idUser: req.body.idUser
+  newInformeAccidente: async (req, res) => {
+    const uploadPromise = new Promise((resolve, reject) => {
+      upload.single("firma")(req, res, (err) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          resolve();
+        }
       });
-      var id = newInformeIntAccidente._id
+    });
+
+    try {
+      await uploadPromise; // Wait for image upload to complete
+      const {
+        comedor,
+        fecha,
+        tipo,
+        checkboxes,
+        nombreapellido,
+        cuil,
+        fechaIngreso,
+        puesto,
+        hora,
+        lugar,
+        descripcion,
+        checkboxesAccidente,
+        lugarLesion,
+        medidas,
+        razon,
+        date,
+        editEnabled,
+        wasEdited,
+        motivo,
+        motivoPeticion,
+        motivoRespuesta,
+        whoApproved,
+        rol,
+        nombre,
+        businessName,
+        idUser
+      } = req.body;
+
+
+
+      if (!req.file || !req.file.location) {
+        throw new Error("No se ha proporcionado un archivo válido.");
+      }
+
+
+      const newInformeAccidente = new InformeIntAccidente({
+        comedor,
+        fecha,
+        tipo,
+        checkboxes,
+        nombreapellido,
+        cuil,
+        fechaIngreso,
+        puesto,
+        hora,
+        lugar,
+        descripcion,
+        checkboxesAccidente,
+        lugarLesion,
+        medidas,
+        razon,
+        date,
+        editEnabled,
+        wasEdited,
+        motivo,
+        motivoPeticion,
+        motivoRespuesta,
+        whoApproved,
+        rol,
+        nombre,
+        businessName,
+        idUser,
+        firma: req.file.location // Set the profile image URL from S3
+      });
+      var id = newInformeAccidente._id
       await User.findOneAndUpdate({ _id: req.body.idUser }, { $push: { informeintaccidente: id } }, { new: true })
-      await newInformeIntAccidente.save();
-      return res.status(200).send({ message: 'Informe Int Accidente created successfully' });
+      await newInformeAccidente.save();
+
+      return res.status(200).send({ message: 'Informe Accidente create successfully' });
+
 
     } catch (error) {
-      return res.status(500).send({ error: error.message });
+      console.log(error);
+      return res.json({ success: false, error: error });
     }
-
   },
   deleteForm: async (req, res) => {
     try {

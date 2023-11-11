@@ -52,7 +52,7 @@ router.route('/business/:id')
 router.route('/login/ls')
     .post(passport.authenticate('jwt', { session: false }), userController.logFromLStorage)
 
-router.route('/:legajo/:business')
+router.route('/users/:legajo/:business')
     .delete(userController.deleteUserByLegajo)
 
 router.route('/newbusiness')

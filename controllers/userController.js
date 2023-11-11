@@ -42,9 +42,10 @@ const userController = {
         }
       });
     });
-
+  
     try {
       await uploadPromise; // Wait for image upload to complete
+  
       const {
         email,
         business,
@@ -58,10 +59,10 @@ const userController = {
         contratoComedor,
         idChief
       } = req.body;
-
+  
       // Check if the email already exists
       const emailExists = await User.findOne({ legajo: legajo });
-
+  
       if (emailExists) {
         return res.json({
           success: false,
@@ -69,13 +70,9 @@ const userController = {
           response: null
         });
       }
-
-      if (!req.file || !req.file.location) {
-        throw new Error("No se ha proporcionado una imagen válida.");
-      }
-
+  
       const passRandom = randomstring.generate(8); // Generate a random 8-character password
-
+  
       const newUser = new User({
         email,
         password: passRandom,
@@ -89,12 +86,12 @@ const userController = {
         localidad,
         contratoComedor,
         idChief,
-        imgProfile: req.file.location // Set the profile image URL from S3
+        imgProfile: req.file ? req.file.location : null // Set the profile image URL from S3 if it exists
       });
-
-      console.log(newUser)
+  
+      console.log(newUser);
       const newUserSaved = await newUser.save();
-
+  
       // Call the forgotPassword function and handle the response
       const forgotPasswordResult = await userController.forgotPassword(req, res);
       if (forgotPasswordResult.success) {
@@ -125,6 +122,7 @@ const userController = {
       return res.json({ success: false, error: error });
     }
   },
+  
   login: async (req, res) => {
     try {
       const { legajo, password } = req.body

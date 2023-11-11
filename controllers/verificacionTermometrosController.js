@@ -9,8 +9,8 @@ const verificacionTermometrosController = {
       const newVerificacionTermometros = new VerificacionTermometros({
         fecha: req.body.fecha,
         responsable: req.body.responsable,
-        inputsTrimestral: req.body.balanza,
-        inputsSemestral: req.body.inputs,
+        inputsTrimestral: req.body.inputsTrimestral,
+        inputsSemestral: req.body.inputsSemestral,
         verified: req.body.verified,
         fechaHora: req.body.fechaHora,
         date: req.body.date,
@@ -30,7 +30,7 @@ const verificacionTermometrosController = {
       var id = newVerificacionTermometros._id
       await User.findOneAndUpdate({ _id: req.body.idUser }, { $push: { verificaciontermometros: id } }, { new: true })
       await newVerificacionTermometros.save();
-      return res.status(200).send({ message: 'Verificacion Balanza successfully' });
+      return res.status(200).send({ message: 'Verificacion Termometros successfully' });
 
     } catch (error) {
       return res.status(500).send({ error: error.message });

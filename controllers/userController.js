@@ -201,7 +201,7 @@ const userController = {
 
         await emailExists.save();
 
-        const resetUrl = `http://localhost:3000/restablecer-contrasena/${emailExists.token}`;
+        const resetUrl = `https://onmodoapp.com/restablecer-contrasena/${emailExists.token}`;
         const newToken = emailExists.token
 
         await enviarMail.enviar({

@@ -30,6 +30,7 @@ const entregaRopaController = {
         rol: req.body.rol,
         nombre: req.body.nombre,
         businessName: req.body.businessName,
+        nombreUsuario: req.body.nombreUsuario,
         idUser: req.body.idUser
       });
       var id = newEntregaRopa._id

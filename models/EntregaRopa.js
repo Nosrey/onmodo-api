@@ -22,8 +22,9 @@ const entregaRopaSchema = new mongoose.Schema({
     motivoRespuesta: { type: String },
     whoApproved: { type: String },
     rol: { type: String },
-    nombre:{ type: String },
-    businessName:{ type: String },
+    nombre: { type: String },
+    businessName: { type: String },
+    nombreUsuario: { type: String },
     idUser: [{ type: mongoose.Schema.ObjectId, ref: "user" }]
 
 }, { timestamps: true })

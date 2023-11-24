@@ -44,7 +44,7 @@ const registroSimulacroController = {
       await uploadPromise; // Wait for image upload to complete
       const {
         razonSocial,
-        ubiacion,
+        ubicacion,
         localidad,
         fecha,
         personas,
@@ -70,7 +70,7 @@ const registroSimulacroController = {
 
       const newRegistroSimulacro = new RegistroSimulacro({
         razonSocial,
-        ubiacion,
+        ubicacion,
         localidad,
         fecha,
         personas,

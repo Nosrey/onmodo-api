@@ -18,10 +18,7 @@ const flashIncidenteSchema = new mongoose.Schema({
     firmaSupervisor:{ type: String, },
     nombreGerente:{ type: String, },
     firmaGerente:{ type: String, },
-    /* asesor: { type: Array },
-    supervisor: { type: Array },
-    gerente: { type: Array }, */
-    status: { type: String, default: "" },
+    status: { type: String, default: "free" },
     editEnabled: { type: Boolean },
     wasEdited: { type: Boolean },
     dateLastEdition: { type: String },

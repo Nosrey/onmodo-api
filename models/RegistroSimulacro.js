@@ -8,7 +8,7 @@ const registroSimulacroSchema = new mongoose.Schema({
     personas: { type: Array },
     firmaDoc: { type: String, },
     date: { type: String, required: false },
-    status: { type: String, default: "" },
+    status: { type: String, default: "free" },
     editEnabled: { type: Boolean },
     wasEdited: { type: Boolean },
     dateLastEdition: { type: String },

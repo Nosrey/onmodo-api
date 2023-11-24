@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 const usoCambioAceiteSchema = new mongoose.Schema({
     inputs: { type: Array },
-    status: { type: String, default: "" },
+    status: { type: String, default: "free" },
     observaciones: { type: String },
     editEnabled: { type: Boolean },
     wasEdited: { type: Boolean },

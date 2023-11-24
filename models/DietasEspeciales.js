@@ -6,7 +6,7 @@ const dietasEspecialesSchema = new mongoose.Schema({
     verified: { type: String},
     fechaHora:{type:String},
     date: { type: String, required: false },
-    status: { type: String, default: "" },
+    status: { type: String, default: "free" },
     editEnabled: { type: Boolean },
     wasEdited: { type: Boolean },
     dateLastEdition: { type: String },

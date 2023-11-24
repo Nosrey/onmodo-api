@@ -13,7 +13,7 @@ const registroCapacitacionSchema = new mongoose.Schema({
     cargo: { type: String },
     firma: { type: String },
     date: { type: String, required: false },
-    status: { type: String, default: "" },
+    status: { type: String, default: "free" },
     editEnabled: { type: Boolean },
     wasEdited: { type: Boolean },
     dateLastEdition: { type: String },

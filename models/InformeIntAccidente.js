@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const informeIntAccidenteSchema = new mongoose.Schema({
     comedor: { type: String, },
     fecha: { type: String, },
+    denuncia:{type:String},
     tipo: { type: String, },
     checkboxes: { type: Array, },
     nombreapellido: { type: String, },

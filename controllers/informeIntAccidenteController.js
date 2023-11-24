@@ -30,7 +30,7 @@ const InformeIntAccidenteController = {
 
   newInformeAccidente: async (req, res) => {
     const uploadPromise = new Promise((resolve, reject) => {
-      upload.single("firma")(req, res, (err) => {
+      upload.fields([{ name: 'denuncia' }, { name: 'firma' }])(req, res, (err) => {
         if (err) {
           console.log(err);
           reject(err);
@@ -41,7 +41,8 @@ const InformeIntAccidenteController = {
     });
 
     try {
-      await uploadPromise; // Wait for image upload to complete
+      await uploadPromise; // Esperar a que la carga de las imágenes se complete
+
       const {
         comedor,
         fecha,
@@ -59,8 +60,10 @@ const InformeIntAccidenteController = {
         medidas,
         razon,
         date,
+        status,
         editEnabled,
         wasEdited,
+        dateLastEdition,
         motivo,
         motivoPeticion,
         motivoRespuesta,
@@ -68,16 +71,22 @@ const InformeIntAccidenteController = {
         rol,
         nombre,
         businessName,
-        idUser
+        idUser,
       } = req.body;
 
+      let denunciaLocation = null;
+      let firmaLocation = null;
 
-
-      if (!req.file || !req.file.location) {
-        throw new Error("No se ha proporcionado un archivo válido.");
+      // Verificar si se proporcionaron archivos y obtener sus ubicaciones
+      if (req.files['denuncia'] && req.files['denuncia'][0]) {
+        denunciaLocation = req.files['denuncia'][0].location;
       }
 
+      if (req.files['firma'] && req.files['firma'][0]) {
+        firmaLocation = req.files['firma'][0].location;
+      }
 
+      // Crear un nuevo informe accidente con o sin ubicaciones de archivos
       const newInformeAccidente = new InformeIntAccidente({
         comedor,
         fecha,
@@ -95,8 +104,10 @@ const InformeIntAccidenteController = {
         medidas,
         razon,
         date,
+        status,
         editEnabled,
         wasEdited,
+        dateLastEdition,
         motivo,
         motivoPeticion,
         motivoRespuesta,
@@ -105,20 +116,23 @@ const InformeIntAccidenteController = {
         nombre,
         businessName,
         idUser,
-        firma: req.file.location // Set the profile image URL from S3
+        denuncia: denunciaLocation,
+        firma: firmaLocation,
       });
-      var id = newInformeAccidente._id
-      await User.findOneAndUpdate({ _id: req.body.idUser }, { $push: { informeintaccidente: id } }, { new: true })
-      await newInformeAccidente.save();
 
-      return res.status(200).send({ message: 'Informe Accidente create successfully' });
+      const savedInformeAccidente = await newInformeAccidente.save();
 
+      // Actualizar el usuario con el nuevo informe creado
+      await User.findOneAndUpdate({ _id: idUser }, { $push: { informeintaccidente: savedInformeAccidente._id } }, { new: true });
 
+      return res.status(200).send({ message: 'Informe de accidente creado exitosamente' });
     } catch (error) {
       console.log(error);
-      return res.json({ success: false, error: error });
+      return res.json({ success: false, error: error.message });
     }
+
   },
+
   deleteForm: async (req, res) => {
     try {
       const formId = req.params.id; // Obtener el ID del registro a eliminar desde los parámetros de la solicitud

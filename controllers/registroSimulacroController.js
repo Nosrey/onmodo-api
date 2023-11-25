@@ -215,48 +215,68 @@ const registroSimulacroController = {
   editFormById: async (req, res) => {
     try {
       const formId = req.params.formId; // Obtener el ID del formulario a editar desde los parámetros de la solicitud
-      const formData = req.body; // Obtener los datos actualizados desde el cuerpo de la solicitud
-
-      // Obtener el formulario existente
-      const existingForm = await RegistroSimulacro.findById(formId);
-
-      if (!existingForm) {
-        return res.status(404).send({ message: "Form not found" });
-      }
-
-      // Verificar si editEnabled es true en el formulario existente
-      if (!existingForm.editEnabled) {
-        return res.status(403).send({ message: "Editing is not allowed for this form" });
-      }
-
-      // Actualizar el formulario utilizando findByIdAndUpdate
-      const updatedForm = await RegistroSimulacro.findByIdAndUpdate(formId, formData, { new: true });
-
-      if (!updatedForm) {
-        return res.status(404).send({ message: "Form not found" });
-      }
-
-      // Actualizar la lista de formularios en el modelo User
-      const user = await User.findOne({ _id: updatedForm.idUser });
-      if (!user) {
-        return res.status(404).send({ message: "User not found" });
-      }
-
-      // Buscar el índice del formulario en la lista de formularios del usuario
-      const formIndex = user.registrosimulacro.indexOf(formId);
-
-      // Reemplazar el formulario antiguo con el formulario actualizado
-      if (formIndex !== -1) {
-        user.registrosimulacro.splice(formIndex, 1, updatedForm._id);
-        await user.save();
-      }
-
-      return res.status(200).send({ message: "Form updated successfully", updatedForm });
+  
+      // Use multer to parse the form data
+      upload.single("firmaDoc")(req, res, async (err) => {
+        if (err) {
+          console.log(err);
+          return res.status(400).send({ error: "Error parsing form data" });
+        }
+  
+        const formData = req.body; // Obtener los datos actualizados desde el cuerpo de la solicitud
+  
+        // Obtener el formulario existente
+        const existingForm = await RegistroSimulacro.findById(formId);
+  
+        if (!existingForm) {
+          return res.status(404).send({ message: "Form not found" });
+        }
+  
+        // Verificar si editEnabled es true en el formulario existente
+        if (!existingForm.editEnabled) {
+          return res.status(403).send({ message: "Editing is not allowed for this form" });
+        }
+  
+        // Verificar si se proporciona una nueva imagen
+        if (req.file && req.file.location) {
+          // Eliminar la imagen anterior del bucket
+          if (existingForm.firmaDoc) {
+            const oldKey = existingForm.firmaDoc.split('/').pop();
+            await s3.deleteObject({ Bucket: "capacitacion-onmodo", Key: oldKey }).promise();
+          }
+  
+          // Actualizar la firmaDoc con la nueva URL de la imagen en S3
+          formData.firmaDoc = req.file.location;
+        }
+  
+        // Actualizar el formulario utilizando findByIdAndUpdate
+        const updatedForm = await RegistroSimulacro.findByIdAndUpdate(formId, formData, { new: true });
+  
+        if (!updatedForm) {
+          return res.status(404).send({ message: "Form not found" });
+        }
+  
+        // Actualizar la lista de formularios en el modelo User
+        const user = await User.findOne({ _id: updatedForm.idUser });
+        if (!user) {
+          return res.status(404).send({ message: "User not found" });
+        }
+  
+        // Buscar el índice del formulario en la lista de formularios del usuario
+        const formIndex = user.registrosimulacro.indexOf(formId);
+  
+        // Reemplazar el formulario antiguo con el formulario actualizado
+        if (formIndex !== -1) {
+          user.registrosimulacro.splice(formIndex, 1, updatedForm._id);
+          await user.save();
+        }
+  
+        return res.status(200).send({ message: "Form updated successfully", updatedForm });
+      });
     } catch (error) {
       return res.status(500).send({ error: error.message });
     }
-  },
-
+  }
 }
 
 module.exports = registroSimulacroController

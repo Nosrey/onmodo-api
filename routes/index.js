@@ -58,6 +58,9 @@ router.route('/users/:legajo/:business')
 router.route('/newbusiness')
     .post(businessController.newBusiness)
 
+router.route('/users/stats/:business')
+    .get(userController.countUsersByBusiness)
+
 // Password
 
 router.route('/forgotpassword')

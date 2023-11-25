@@ -42,10 +42,10 @@ const userController = {
         }
       });
     });
-  
+
     try {
       await uploadPromise; // Wait for image upload to complete
-  
+
       const {
         email,
         business,
@@ -59,10 +59,10 @@ const userController = {
         contratoComedor,
         idChief
       } = req.body;
-  
+
       // Check if the email already exists
       const emailExists = await User.findOne({ legajo: legajo });
-  
+
       if (emailExists) {
         return res.json({
           success: false,
@@ -70,9 +70,9 @@ const userController = {
           response: null
         });
       }
-  
+
       const passRandom = randomstring.generate(8); // Generate a random 8-character password
-  
+
       const newUser = new User({
         email,
         password: passRandom,
@@ -88,10 +88,10 @@ const userController = {
         idChief,
         imgProfile: req.file ? req.file.location : null // Set the profile image URL from S3 if it exists
       });
-  
+
       console.log(newUser);
       const newUserSaved = await newUser.save();
-  
+
       // Call the forgotPassword function and handle the response
       const forgotPasswordResult = await userController.forgotPassword(req, res);
       if (forgotPasswordResult.success) {
@@ -122,7 +122,7 @@ const userController = {
       return res.json({ success: false, error: error });
     }
   },
-  
+
   login: async (req, res) => {
     try {
       const { legajo, password } = req.body
@@ -259,7 +259,95 @@ const userController = {
       console.error(error);
       return res.json({ success: false, response: 'Ha ocurrido un error en el servidor' });
     }
-  }
+  },
+
+  countUsersByBusiness: async (req, res) => {
+    try {
+      const businessName = req.params.business; // Obtener el nombre del business de los parámetros de la solicitud
+
+      // Obtener todas las provincias únicas para el negocio
+      const uniqueProvincias = await User.distinct('provincia', { business: businessName });
+
+      // Utilizar la agregación de MongoDB para contar usuarios por provincia y obtener la cantidad de formularios por usuario
+      const usersWithFormCounts = await User.aggregate([
+        { $match: { business: businessName } }, // Filtrar por el business
+        {
+          $project: {
+            _id: 1,
+            provincia: 1,
+            cargaCount: { $size: '$carga' },
+            chequeoeppCount: { $size: '$chequeoepp' },
+            controlalergenosCount: { $size: '$controlalergenos' },
+            controlcloroCount: { $size: '$controlcloro' },
+            controlequipofrioCount: { $size: '$controlequipofrio' },
+            controlprocesoCount: { $size: '$controlproceso' },
+            controlvidrioCount: { $size: '$controlvidrio' },
+            descongelamientoCount: { $size: '$descongelamiento' },
+            despachoproduccionCount: { $size: '$despachoproduccion' },
+            distribucionCount: { $size: '$distribucion' },
+            entregabidonesCount: { $size: '$entregabidones' },
+            entregaropaCount: { $size: '$entregaropa' },
+            flashincidenteCount: { $size: '$flashincidente' },
+            informeintaccidenteCount: { $size: '$informeintaccidente' },
+            planillaarmadoCount: { $size: '$planillaarmado' },
+            recepcionCount: { $size: '$recepcion' },
+            recuperacionproductoCount: { $size: '$recuperacionproducto' },
+            registrocapacitacionCount: { $size: '$registrocapacitacion' },
+            registrodecomisoCount: { $size: '$registrodecomiso' },
+            registrosimulacroCount: { $size: '$registrosimulacro' },
+            reporterechazoCount: { $size: '$reporterechazo' },
+            saludmanipuladoresCount: { $size: '$saludmanipuladores' },
+            sanitizacionCount: { $size: '$sanitizacion' },
+            servicioenlineaCount: { $size: '$servicioenlinea' },
+            usocambioaceiteCount: { $size: '$usocambioaceite' },
+            verificacionbalanzaCount: { $size: '$verificacionbalanza' },
+            verificaciontermometrosCount: { $size: '$verificaciontermometros' },
+            recordatorioCount: { $size: '$recordatorio' },
+          },
+        },
+      ]);
+
+      // Crear un objeto con todas las provincias y establecer la cantidad de usuarios y formularios
+      const provinciaCounts = uniqueProvincias.map((provincia) => {
+        const usersInProvincia = usersWithFormCounts.filter((user) => user.provincia === provincia);
+        return {
+          provincia,
+          usersCount: usersInProvincia.length,
+          formulariosCount: usersInProvincia.reduce((total, user) => total +
+            user.cargaCount + user.chequeoeppCount + user.controlalergenosCount +
+            user.controlcloroCount + user.controlequipofrioCount + user.controlprocesoCount +
+            user.controlvidrioCount + user.descongelamientoCount + user.despachoproduccionCount +
+            user.distribucionCount + user.entregabidonesCount + user.entregaropaCount +
+            user.flashincidenteCount + user.informeintaccidenteCount + user.planillaarmadoCount +
+            user.recepcionCount + user.recuperacionproductoCount + user.registrocapacitacionCount +
+            user.registrodecomisoCount + user.registrosimulacroCount + user.reporterechazoCount +
+            user.saludmanipuladoresCount + user.sanitizacionCount + user.servicioenlineaCount +
+            user.usocambioaceiteCount + user.verificacionbalanzaCount + user.verificaciontermometrosCount +
+            user.recordatorioCount, 0),
+        };
+      });
+
+      // Calcular la cantidad total de usuarios en el negocio y la cantidad total de formularios
+      const totalUsers = usersWithFormCounts.length;
+      const totalFormularios = usersWithFormCounts.reduce((total, user) => total +
+        user.cargaCount + user.chequeoeppCount + user.controlalergenosCount +
+        user.controlcloroCount + user.controlequipofrioCount + user.controlprocesoCount +
+        user.controlvidrioCount + user.descongelamientoCount + user.despachoproduccionCount +
+        user.distribucionCount + user.entregabidonesCount + user.entregaropaCount +
+        user.flashincidenteCount + user.informeintaccidenteCount + user.planillaarmadoCount +
+        user.recepcionCount + user.recuperacionproductoCount + user.registrocapacitacionCount +
+        user.registrodecomisoCount + user.registrosimulacroCount + user.reporterechazoCount +
+        user.saludmanipuladoresCount + user.sanitizacionCount + user.servicioenlineaCount +
+        user.usocambioaceiteCount + user.verificacionbalanzaCount + user.verificaciontermometrosCount +
+        user.recordatorioCount, 0);
+
+      return res.json({ success: true, response: { business: businessName, provinciaCounts, totalUsers, totalFormularios } });
+    } catch (error) {
+      // Manejo de errores
+      console.error(error);
+      return res.json({ success: false, response: 'Ha ocurrido un error en el servidor' });
+    }
+  },
 
 }
 

@@ -115,7 +115,7 @@ const registroCapacitacionController = {
     }
   },
 
-  
+
   deleteForm: async (req, res) => {
     try {
       const formId = req.params.id; // Obtener el ID del registro a eliminar desde los parámetros de la solicitud
@@ -231,47 +231,70 @@ const registroCapacitacionController = {
   editFormById: async (req, res) => {
     try {
       const formId = req.params.formId; // Obtener el ID del formulario a editar desde los parámetros de la solicitud
-      const formData = req.body; // Obtener los datos actualizados desde el cuerpo de la solicitud
 
-      // Obtener el formulario existente
-      const existingForm = await RegistroCapacitacion.findById(formId);
+      // Use multer to parse the form data
+      upload.single("firma")(req, res, async (err) => {
+        if (err) {
+          console.log(err);
+          return res.status(400).send({ error: "Error parsing form data" });
+        }
 
-      if (!existingForm) {
-        return res.status(404).send({ message: "Form not found" });
-      }
+        const formData = req.body; // Obtener los datos actualizados desde el cuerpo de la solicitud
 
-      // Verificar si editEnabled es true en el formulario existente
-      if (!existingForm.editEnabled) {
-        return res.status(403).send({ message: "Editing is not allowed for this form" });
-      }
+        // Obtener el formulario existente
+        const existingForm = await RegistroCapacitacion.findById(formId);
 
-      // Actualizar el formulario utilizando findByIdAndUpdate
-      const updatedForm = await RegistroCapacitacion.findByIdAndUpdate(formId, formData, { new: true });
+        if (!existingForm) {
+          return res.status(404).send({ message: "Form not found" });
+        }
 
-      if (!updatedForm) {
-        return res.status(404).send({ message: "Form not found" });
-      }
+        // Verificar si editEnabled es true en el formulario existente
+        if (!existingForm.editEnabled) {
+          return res.status(403).send({ message: "Editing is not allowed for this form" });
+        }
 
-      // Actualizar la lista de formularios en el modelo User
-      const user = await User.findOne({ _id: updatedForm.idUser });
-      if (!user) {
-        return res.status(404).send({ message: "User not found" });
-      }
+        // Verificar si se proporciona una nueva imagen
+        if (req.file && req.file.location) {
+          // Eliminar la imagen anterior del bucket
+          if (existingForm.firma) {
+            const oldKey = existingForm.firma.split('/').pop();
+            await s3.deleteObject({ Bucket: "capacitacion-onmodo", Key: oldKey }).promise();
+          }
 
-      // Buscar el índice del formulario en la lista de formularios del usuario
-      const formIndex = user.registrocapacitacion.indexOf(formId);
+          // Actualizar la firma con la nueva URL de la imagen en S3
+          formData.firma = req.file.location;
+        }
 
-      // Reemplazar el formulario antiguo con el formulario actualizado
-      if (formIndex !== -1) {
-        user.registrocapacitacion.splice(formIndex, 1, updatedForm._id);
-        await user.save();
-      }
+        // Actualizar el formulario utilizando findByIdAndUpdate
+        const updatedForm = await RegistroCapacitacion.findByIdAndUpdate(formId, formData, { new: true });
 
-      return res.status(200).send({ message: "Form updated successfully", updatedForm });
+        if (!updatedForm) {
+          return res.status(404).send({ message: "Form not found" });
+        }
+
+        // Actualizar la lista de formularios en el modelo User
+        const user = await User.findOne({ _id: updatedForm.idUser });
+        if (!user) {
+          return res.status(404).send({ message: "User not found" });
+        }
+
+        // Buscar el índice del formulario en la lista de formularios del usuario
+        const formIndex = user.registrocapacitacion.indexOf(formId);
+
+        // Reemplazar el formulario antiguo con el formulario actualizado
+        if (formIndex !== -1) {
+          user.registrocapacitacion.splice(formIndex, 1, updatedForm._id);
+          await user.save();
+        }
+
+        return res.status(200).send({ message: "Form updated successfully", updatedForm });
+      });
     } catch (error) {
       return res.status(500).send({ error: error.message });
     }
   },
+
+
 }
 
 module.exports = registroCapacitacionController

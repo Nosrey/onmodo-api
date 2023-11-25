@@ -82,9 +82,9 @@ const dietasEspecialesController = {
       await newDietasEspeciales.save(); // Guardar el registro de DietasEspeciales en la base de datos
 
       var id = newDietasEspeciales._id;
-      await User.findOneAndUpdate({ _id: req.body.idUser }, { $push: { registrocapacitacion: id } }, { new: true });
+      // await User.findOneAndUpdate({ _id: req.body.idUser }, { $push: { registrocapacitacion: id } }, { new: true });
 
-      return res.status(200).send({ message: 'Registro Capacitación creado exitosamente' });
+      return res.status(200).send({ message: 'dietas especiales creado exitosamente' });
 
     } catch (error) {
       console.log(error);

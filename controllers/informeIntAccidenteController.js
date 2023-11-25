@@ -248,47 +248,82 @@ const InformeIntAccidenteController = {
   editFormById: async (req, res) => {
     try {
       const formId = req.params.formId; // Obtener el ID del formulario a editar desde los parámetros de la solicitud
-      const formData = req.body; // Obtener los datos actualizados desde el cuerpo de la solicitud
 
-      // Obtener el formulario existente
-      const existingForm = await InformeIntAccidente.findById(formId);
+      // Use multer to parse the form data
+      upload.fields([{ name: 'denuncia' }, { name: 'firma' }])(req, res, async (err) => {
+        if (err) {
+          console.log(err);
+          return res.status(400).send({ error: "Error parsing form data" });
+        }
 
-      if (!existingForm) {
-        return res.status(404).send({ message: "Form not found" });
-      }
+        const formData = req.body; // Obtener los datos actualizados desde el cuerpo de la solicitud
 
-      // Verificar si editEnabled es true en el formulario existente
-      if (!existingForm.editEnabled) {
-        return res.status(403).send({ message: "Editing is not allowed for this form" });
-      }
+        // Obtener el formulario existente
+        const existingForm = await InformeIntAccidente.findById(formId);
 
-      // Actualizar el formulario utilizando findByIdAndUpdate
-      const updatedForm = await InformeIntAccidente.findByIdAndUpdate(formId, formData, { new: true });
+        if (!existingForm) {
+          return res.status(404).send({ message: "Form not found" });
+        }
 
-      if (!updatedForm) {
-        return res.status(404).send({ message: "Form not found" });
-      }
+        // Verificar si editEnabled es true en el formulario existente
+        if (!existingForm.editEnabled) {
+          return res.status(403).send({ message: "Editing is not allowed for this form" });
+        }
 
-      // Actualizar la lista de formularios en el modelo User
-      const user = await User.findOne({ _id: updatedForm.idUser });
-      if (!user) {
-        return res.status(404).send({ message: "User not found" });
-      }
+        // Verificar si se proporcionaron archivos y obtener sus ubicaciones
+        let denunciaLocation = existingForm.denuncia;
+        let firmaLocation = existingForm.firma;
 
-      // Buscar el índice del formulario en la lista de formularios del usuario
-      const formIndex = user.informeintaccidente.indexOf(formId);
+        if (req.files['denuncia'] && req.files['denuncia'][0]) {
+          // Eliminar la imagen anterior de la denuncia del bucket
+          if (existingForm.denuncia) {
+            const oldDenunciaKey = existingForm.denuncia.split('/').pop();
+            await s3.deleteObject({ Bucket: "informe-accidente-onmodo", Key: oldDenunciaKey }).promise();
+          }
+          denunciaLocation = req.files['denuncia'][0].location;
+        }
 
-      // Reemplazar el formulario antiguo con el formulario actualizado
-      if (formIndex !== -1) {
-        user.informeintaccidente.splice(formIndex, 1, updatedForm._id);
-        await user.save();
-      }
+        if (req.files['firma'] && req.files['firma'][0]) {
+          // Eliminar la imagen anterior de la firma del bucket
+          if (existingForm.firma) {
+            const oldFirmaKey = existingForm.firma.split('/').pop();
+            await s3.deleteObject({ Bucket: "informe-accidente-onmodo", Key: oldFirmaKey }).promise();
+          }
+          firmaLocation = req.files['firma'][0].location;
+        }
 
-      return res.status(200).send({ message: "Form updated successfully", updatedForm });
+        // Actualizar las ubicaciones de las imágenes en el formulario con las nuevas ubicaciones o las antiguas si no se proporcionaron nuevas imágenes
+        formData.denuncia = denunciaLocation;
+        formData.firma = firmaLocation;
+
+        // Actualizar el formulario utilizando findByIdAndUpdate
+        const updatedForm = await InformeIntAccidente.findByIdAndUpdate(formId, formData, { new: true });
+
+        if (!updatedForm) {
+          return res.status(404).send({ message: "Form not found" });
+        }
+
+        // Actualizar la lista de formularios en el modelo User
+        const user = await User.findOne({ _id: updatedForm.idUser });
+        if (!user) {
+          return res.status(404).send({ message: "User not found" });
+        }
+
+        // Buscar el índice del formulario en la lista de formularios del usuario
+        const formIndex = user.informeintaccidente.indexOf(formId);
+
+        // Reemplazar el formulario antiguo con el formulario actualizado
+        if (formIndex !== -1) {
+          user.informeintaccidente.splice(formIndex, 1, updatedForm._id);
+          await user.save();
+        }
+
+        return res.status(200).send({ message: "Form updated successfully", updatedForm });
+      });
     } catch (error) {
       return res.status(500).send({ error: error.message });
     }
-  },
+  }
 }
 
 module.exports = InformeIntAccidenteController

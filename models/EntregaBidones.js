@@ -4,7 +4,7 @@ const entregaBidonesSchema = new mongoose.Schema({
     inputs: { type: Array },
     date: { type: String, required: false },
     status: { type: String, default: "free" },
-    editEnabled: { type: Boolean },
+    editEnabled: { type: Boolean, default: true },
     wasEdited: { type: Boolean },
     dateLastEdition: { type: String },
     motivo: { type: String },

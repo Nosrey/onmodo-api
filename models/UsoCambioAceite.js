@@ -4,7 +4,7 @@ const usoCambioAceiteSchema = new mongoose.Schema({
     inputs: { type: Array },
     status: { type: String, default: "free" },
     observaciones: { type: String },
-    editEnabled: { type: Boolean },
+    editEnabled: { type: Boolean, default: true },
     wasEdited: { type: Boolean },
     dateLastEdition: { type: String },
     motivo: { type: String },
@@ -12,8 +12,8 @@ const usoCambioAceiteSchema = new mongoose.Schema({
     motivoRespuesta: { type: String },
     whoApproved: { type: String },
     rol: { type: String },
-    nombre:{ type: String },
-    businessName:{ type: String },
+    nombre: { type: String },
+    businessName: { type: String },
     idUser: [{ type: mongoose.Schema.ObjectId, ref: "user" }]
 
 }, { timestamps: true })

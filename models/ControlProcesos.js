@@ -6,7 +6,7 @@ const controlProcesosSchema = new mongoose.Schema({
     fechaHora:{type:String},
     date: { type: String, required: false },
     status: { type: String, default: "free" },
-    editEnabled: { type: Boolean },
+    editEnabled: { type: Boolean, default: true },
     wasEdited: { type: Boolean },
     dateLastEdition: { type: String },
     motivo: { type: String },

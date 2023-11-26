@@ -220,6 +220,41 @@ const userController = {
     }
   },
 
+  restablecerPassword: async (req, res) => {
+    const { email } = req.body;
+
+    const emailExists = await User.findOne({ email: email });
+    console.log(emailExists);
+  
+    if (!emailExists) {
+      res.json({ success: false, response: 'Este correo no se encuentra' });
+    } else {
+      try {
+        const newToken = crypto.randomBytes(20).toString('hex'); // Define newToken here
+        emailExists.token = newToken;
+        emailExists.expirated = Date.now() + 600;
+  
+        await emailExists.save();
+  
+        const resetUrl = `https://onmodoapp.com/restablecer-contrasena/${newToken}`; // Use newToken here
+  
+        await enviarMail.enviar({
+          emailExists,
+          subject: 'Establece tu contraseña',
+          resetUrl,
+          newToken,
+          archivo: 'restablecer-pass'
+        });
+        return res.json({ success: true, message: 'Email enviado!' });
+      } catch (error) {
+        res.json({ success: false, response: error });
+        console.log(error);
+      }
+    }
+
+  },
+
+
 
   actualizarPassword: async (req, res) => {
     const usuario = await User.findOne({ token: req.params.token })

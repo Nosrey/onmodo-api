@@ -70,6 +70,12 @@ router.route('/users/stats/:business')
 router.route('/forgotpassword')
     .post(userController.forgotPassword)
 
+router.route('/restablecer-password')
+    .post(userController.restablecerPassword)
+
+router.route('/restablecer-password/:token')
+    .post(userController.actualizarPassword)
+
 router.route('/forgotpassword/:token')
     .post(userController.actualizarPassword)
 

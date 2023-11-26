@@ -57,6 +57,10 @@ router.route('/users/:legajo/:business')
 
 router.route('/newbusiness')
     .post(businessController.newBusiness)
+router.route('/newbusiness/:name')
+    .get(businessController.getBusinessByName)
+router.route('/newbusiness/:_id')
+    .put(businessController.editBusiness)
 
 router.route('/users/stats/:business')
     .get(userController.countUsersByBusiness)

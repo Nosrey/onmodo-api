@@ -5,19 +5,43 @@ const usoCambioAceiteController = {
 
   newUsoCambioAceite: async (req, res) => {
     try {
-      const newUsoCambioAceite = new UsoCambioAceite({
-        inputs: req.body.inputs,
-        observaciones: req.body.observaciones,
-        rol: req.body.rol,
-        nombre: req.body.nombre,
-        businessName: req.body.businessName,
-        idUser: req.body.idUser
+      // Utilizar el middleware 'upload.array' para manejar la carga de archivos
+      upload.array('inputs')(req, res, async function (err) {
+        if (err) {
+          return res.status(500).send({ error: err.message });
+        }
+  
+        // Obtener la URL de los archivos cargados en S3
+        const fileUrls = req.files.map(file => file.location);
+  
+        // Actualizar la estructura de inputs con las URL de los archivos
+        const updatedInputs = req.body.inputs.map((input, index) => {
+          return {
+            ...input,
+            transporte: fileUrls[index * 2], // Suponiendo que transporte está en la posición par
+            disposicionfinal: fileUrls[index * 2 + 1], // Suponiendo que disposiciónfinal está en la posición impar
+          };
+        });
+  
+        const newUsoCambioAceite = new UsoCambioAceite({
+          inputs: updatedInputs,
+          observaciones: req.body.observaciones,
+          rol: req.body.rol,
+          nombre: req.body.nombre,
+          businessName: req.body.businessName,
+          idUser: req.body.idUser,
+        });
+  
+        var id = newUsoCambioAceite._id;
+        await User.findOneAndUpdate(
+          { _id: req.body.idUser },
+          { $push: { usocambioaceite: id } },
+          { new: true }
+        );
+  
+        await newUsoCambioAceite.save();
+        return res.status(200).send({ message: 'Uso Cambio Aceite successfully' });
       });
-      var id = newUsoCambioAceite._id
-      await User.findOneAndUpdate({ _id: req.body.idUser }, { $push: { usocambioaceite: id } }, { new: true })
-      await newUsoCambioAceite.save();
-      return res.status(200).send({ message: 'Uso Cambio Aceite successfully' });
-
     } catch (error) {
       return res.status(500).send({ error: error.message });
     }

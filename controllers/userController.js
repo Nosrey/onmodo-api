@@ -89,7 +89,6 @@ const userController = {
         imgProfile: req.file ? req.file.location : null // Set the profile image URL from S3 if it exists
       });
 
-      console.log(newUser);
       const newUserSaved = await newUser.save();
 
       // Call the forgotPassword function and handle the response
@@ -196,13 +195,12 @@ const userController = {
       return { success: false, message: 'Este correo no se encuentra' };
     } else {
       try {
-        emailExists.token = crypto.randomBytes(20).toString('hex');
+        const newToken = crypto.randomBytes(20).toString('hex'); // Define newToken here
+        emailExists.token = newToken;
         emailExists.expirated = Date.now() + 600;
-
         await emailExists.save();
 
         const resetUrl = `https://onmodoapp.com/restablecer-contrasena/${emailExists.token}`;
-        const newToken = emailExists.token
 
         await enviarMail.enviar({
           emailExists,
@@ -224,7 +222,6 @@ const userController = {
     const { email } = req.body;
 
     const emailExists = await User.findOne({ email: email });
-    console.log(emailExists);
   
     if (!emailExists) {
       res.json({ success: false, response: 'Este correo no se encuentra' });

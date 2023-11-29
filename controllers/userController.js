@@ -171,6 +171,52 @@ const userController = {
       })
   },
 
+  editUser: async (req, res) => {
+    try {
+      const _id = req.params._id; // Obtener el ID del formulario a editar desde los parámetros de la solicitud
+
+      // Use multer to parse the form data
+      upload.single("imgProfile")(req, res, async (err) => {
+        if (err) {
+          console.log(err);
+          return res.status(400).send({ error: "Error parsing form data" });
+        }
+
+        const formData = req.body; // Obtener los datos actualizados desde el cuerpo de la solicitud
+
+        // Obtener el formulario existente
+        const existingForm = await User.findById(_id);
+
+        if (!existingForm) {
+          return res.status(404).send({ message: "Form not found" });
+        }
+
+
+        // Verificar si se proporciona una nueva imagen
+        if (req.file && req.file.location) {
+          // Eliminar la imagen anterior del bucket
+          if (existingForm.imgProfile) {
+            const oldKey = existingForm.imgProfile.split('/').pop();
+            await s3.deleteObject({ Bucket: "perfil-onmodo", Key: oldKey }).promise();
+          }
+
+          formData.imgProfile = req.file.location;
+        }
+
+        // Actualizar el formulario utilizando findByIdAndUpdate
+        const updatedForm = await User.findByIdAndUpdate(_id, formData, { new: true });
+
+        if (!updatedForm) {
+          return res.status(404).send({ message: "Form not found" });
+        }
+
+        return res.status(200).send({ message: "User updated successfully", updatedForm });
+      });
+    } catch (error) {
+      return res.status(500).send({ error: error.message });
+    }
+  },
+
 
   allUsers: (req, res) => {
     User.find()
@@ -222,7 +268,7 @@ const userController = {
     const { email } = req.body;
 
     const emailExists = await User.findOne({ email: email });
-  
+
     if (!emailExists) {
       res.json({ success: false, response: 'Este correo no se encuentra' });
     } else {
@@ -230,11 +276,11 @@ const userController = {
         const newToken = crypto.randomBytes(20).toString('hex'); // Define newToken here
         emailExists.token = newToken;
         emailExists.expirated = Date.now() + 600;
-  
+
         await emailExists.save();
-  
+
         const resetUrl = `https://onmodoapp.com/restablecer-contrasena/${newToken}`; // Use newToken here
-  
+
         await enviarMail.enviar({
           emailExists,
           subject: 'Establece tu contraseña',
@@ -373,7 +419,43 @@ const userController = {
         user.usocambioaceiteCount + user.verificacionbalanzaCount + user.verificaciontermometrosCount +
         user.recordatorioCount, 0);
 
-      return res.json({ success: true, response: { business: businessName, provinciaCounts, totalUsers, totalFormularios } });
+      const totalFormCounts = {
+        carga: usersWithFormCounts.reduce((total, user) => total + user.cargaCount, 0),
+        chequeoepp: usersWithFormCounts.reduce((total, user) => total + user.chequeoeppCount, 0),
+        controlalergenos: usersWithFormCounts.reduce((total, user) => total + user.controlalergenosCount, 0),
+        controlcloro: usersWithFormCounts.reduce((total, user) => total + user.controlcloroCount, 0),
+        controlequipofrio: usersWithFormCounts.reduce((total, user) => total + user.controlequipofrioCount, 0),
+        controlproceso: usersWithFormCounts.reduce((total, user) => total + user.controlprocesoCount, 0),
+        controlvidrio: usersWithFormCounts.reduce((total, user) => total + user.controlvidrioCount, 0),
+        descongelamiento: usersWithFormCounts.reduce((total, user) => total + user.descongelamientoCount, 0),
+        despachoproduccion: usersWithFormCounts.reduce((total, user) => total + user.despachoproduccionCount, 0),
+        distribucion: usersWithFormCounts.reduce((total, user) => total + user.distribucionCount, 0),
+        entregabidones: usersWithFormCounts.reduce((total, user) => total + user.entregabidonesCount, 0),
+        entregaropa: usersWithFormCounts.reduce((total, user) => total + user.entregaropaCount, 0),
+        flashincidente: usersWithFormCounts.reduce((total, user) => total + user.flashincidenteCount, 0),
+        informeintaccidente: usersWithFormCounts.reduce((total, user) => total + user.informeintaccidenteCount, 0),
+        planillaarmado: usersWithFormCounts.reduce((total, user) => total + user.planillaarmadoCount, 0),
+        recepcion: usersWithFormCounts.reduce((total, user) => total + user.recepcionCount, 0),
+        recuperacionproducto: usersWithFormCounts.reduce((total, user) => total + user.recuperacionproductoCount, 0),
+        registrocapacitacion: usersWithFormCounts.reduce((total, user) => total + user.registrocapacitacionCount, 0),
+        registrodecomiso: usersWithFormCounts.reduce((total, user) => total + user.registrodecomisoCount, 0),
+        registrosimulacro: usersWithFormCounts.reduce((total, user) => total + user.registrosimulacroCount, 0),
+        reporterechazo: usersWithFormCounts.reduce((total, user) => total + user.reporterechazoCount, 0),
+        saludmanipuladores: usersWithFormCounts.reduce((total, user) => total + user.saludmanipuladoresCount, 0),
+        sanitizacion: usersWithFormCounts.reduce((total, user) => total + user.sanitizacionCount, 0),
+        servicioenlinea: usersWithFormCounts.reduce((total, user) => total + user.servicioenlineaCount, 0),
+        usocambioaceite: usersWithFormCounts.reduce((total, user) => total + user.usocambioaceiteCount, 0),
+        verificacionbalanza: usersWithFormCounts.reduce((total, user) => total + user.verificacionbalanzaCount, 0),
+        verificaciontermometros: usersWithFormCounts.reduce((total, user) => total + user.verificaciontermometrosCount, 0),
+        recordatorio: usersWithFormCounts.reduce((total, user) => total + user.recordatorioCount, 0),
+      };
+
+      // Ordenar los formularios por la cantidad total en orden descendente
+      const sortedForms = Object.keys(totalFormCounts).sort((a, b) => totalFormCounts[b] - totalFormCounts[a]);
+
+      // Tomar los nombres de los 3 formularios más utilizados
+      const top3Forms = sortedForms.slice(0, 3);
+      return res.json({ success: true, response: { business: businessName, top3Forms, provinciaCounts, totalUsers, totalFormularios } });
     } catch (error) {
       // Manejo de errores
       console.error(error);

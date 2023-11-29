@@ -46,6 +46,9 @@ router.route('/login')
 router.route('/users')
     .get(userController.allUsers)
 
+router.route('/user/:_id')
+    .put(userController.editUser)
+
 router.route('/business/:id')
     .get(userController.eachUser)
 

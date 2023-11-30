@@ -1,36 +1,77 @@
 const EntregaBidones = require("../models/EntregaBidones");
 const User = require("../models/User");
+const crypto = require('crypto')
+const aws = require("aws-sdk");
+const multer = require("multer");
+const multerS3 = require("multer-s3");
 
+aws.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY,
+  secretAccessKey: process.env.AWS_SECRET_KEY
+});
 
+const s3 = new aws.S3();
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: "capacitacion-onmodo",
+
+    key: (req, file, cb) => {
+      crypto.randomBytes(16, (err, hash) => {
+        if (err) cb(err, hash);
+        const fileName = `${hash.toString('hex')}`;
+        cb(null, fileName);
+      });
+    }
+  })
+});
 const entregaBidonesController = {
 
   newEntregaBidones: async (req, res) => {
     try {
-      const newEntregaBidones = new EntregaBidones({
-        inputs: req.body.inputs,
-        date: req.body.date,
-        status: req.body.status,
-        editEnabled: req.body.editEnabled,
-        wasEdited: req.body.wasEdited,
-        dateLastEdition: req.body.dateLastEdition,
-        motivo: req.body.motivo,
-        motivoPeticion: req.body.motivoPeticion,
-        motivoRespuesta: req.body.motivoRespuesta,
-        whoApproved: req.body.whoApproved,
-        rol: req.body.rol,
-        nombre: req.body.nombre,
-        businessName: req.body.businessName,
-        idUser: req.body.idUser
-      });
-      var id = newEntregaBidones._id
-      await User.findOneAndUpdate({ _id: req.body.idUser }, { $push: { entregabidones: id } }, { new: true })
-      await newEntregaBidones.save();
-      return res.status(200).send({ message: 'Entrega Bidones created successfully' });
+      const certificadosTransporte = []; // Initialize an array to store file information
 
+      // Handle file uploads using multer and populate certificadosTransporte array
+      upload.array("certificadoTransporte")(req, res, (err) => {
+        if (err) {
+          return res.status(500).send({ error: err.message });
+        }
+console.log(req.body.certificadoTransporte)
+        // Extract file information and store it in certificadosTransporte array
+        req.files.forEach((file) => {
+          certificadosTransporte.push({
+            originalname: file.originalname,
+            key: file.key, // or any other property you want to store
+          });
+        });
+
+        // Continue with the rest of the code
+        const newEntregaBidones = new EntregaBidones({
+          inputs: req.body.inputs,
+          date: req.body.date,
+          status: req.body.status,
+          editEnabled: req.body.editEnabled,
+          wasEdited: req.body.wasEdited,
+          dateLastEdition: req.body.dateLastEdition,
+          motivo: req.body.motivo,
+          motivoPeticion: req.body.motivoPeticion,
+          motivoRespuesta: req.body.motivoRespuesta,
+          whoApproved: req.body.whoApproved,
+          rol: req.body.rol,
+          nombre: req.body.nombre,
+          businessName: req.body.businessName,
+          idUser: req.body.idUser,
+          certificadoTransporte: certificadosTransporte, // Add the certificadoTransporte array to the model
+        });
+
+        var id = newEntregaBidones._id;
+        User.findOneAndUpdate({ _id: req.body.idUser }, { $push: { entregabidones: id } }, { new: true });
+        newEntregaBidones.save();
+        return res.status(200).send({ message: 'Entrega Bidones created successfully' });
+      });
     } catch (error) {
       return res.status(500).send({ error: error.message });
     }
-
   },
   deleteForm: async (req, res) => {
     try {

@@ -2,6 +2,8 @@ const mongoose = require('mongoose')
 
 const entregaBidonesSchema = new mongoose.Schema({
     inputs: { type: Array },
+    certificadoTransporte:{type: Array},
+    certificadoDisposicion: {type: Array},
     date: { type: String, required: false },
     status: { type: String, default: "free" },
     editEnabled: { type: Boolean, default: true },

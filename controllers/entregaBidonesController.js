@@ -4,6 +4,7 @@ const crypto = require('crypto')
 const aws = require("aws-sdk");
 const multer = require("multer");
 const multerS3 = require("multer-s3");
+const { Buffer } = require('buffer');
 
 aws.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY,
@@ -29,50 +30,83 @@ const entregaBidonesController = {
 
   newEntregaBidones: async (req, res) => {
     try {
-      const certificadosTransporte = []; // Initialize an array to store file information
+      const { certificadoDisposicion, certificadoTransporte, inputs, idUser, rol, nombre } = req.body;
 
-      // Handle file uploads using multer and populate certificadosTransporte array
-      upload.array("certificadoTransporte")(req, res, (err) => {
-        if (err) {
-          return res.status(500).send({ error: err.message });
-        }
-console.log(req.body.certificadoTransporte)
-        // Extract file information and store it in certificadosTransporte array
-        req.files.forEach((file) => {
-          certificadosTransporte.push({
-            originalname: file.originalname,
-            key: file.key, // or any other property you want to store
-          });
-        });
+      // Verificar si los arrays existen y contienen datos
+      if (!certificadoDisposicion || !certificadoTransporte ||
+        certificadoDisposicion.length === 0 || certificadoTransporte.length === 0) {
+        return res.status(400).send({ message: "Certificados no proporcionados correctamente" });
+      }
 
-        // Continue with the rest of the code
-        const newEntregaBidones = new EntregaBidones({
-          inputs: req.body.inputs,
-          date: req.body.date,
-          status: req.body.status,
-          editEnabled: req.body.editEnabled,
-          wasEdited: req.body.wasEdited,
-          dateLastEdition: req.body.dateLastEdition,
-          motivo: req.body.motivo,
-          motivoPeticion: req.body.motivoPeticion,
-          motivoRespuesta: req.body.motivoRespuesta,
-          whoApproved: req.body.whoApproved,
-          rol: req.body.rol,
-          nombre: req.body.nombre,
-          businessName: req.body.businessName,
-          idUser: req.body.idUser,
-          certificadoTransporte: certificadosTransporte, // Add the certificadoTransporte array to the model
-        });
+      const disposicionPromises = certificadoDisposicion.map(async (base64String, index) => {
+        const newBuffer = Buffer.from(base64String.replace(/^data:.+;base64,/, ''), 'base64');
 
-        var id = newEntregaBidones._id;
-        User.findOneAndUpdate({ _id: req.body.idUser }, { $push: { entregabidones: id } }, { new: true });
-        newEntregaBidones.save();
-        return res.status(200).send({ message: 'Entrega Bidones created successfully' });
+        const fileName = `disposicion_${index + 1}.jpeg`;
+
+        await s3.putObject({
+          Bucket: 'capacitacion-onmodo',
+          Key: fileName,
+          Body: newBuffer,
+          ContentEncoding: 'base64',
+          ContentType: 'image/jpeg'
+        }).promise();
+
+        const fileUrl = `https://capacitacion-onmodo.s3.amazonaws.com/${fileName}`;
+        return fileUrl;
       });
+
+      const transportePromises = certificadoTransporte.map(async (base64String, index) => {
+        const newBuffer = Buffer.from(base64String.replace(/^data:.+;base64,/, ''), 'base64');
+
+        const fileName = `transporte_${index + 1}.jpeg`;
+
+        await s3.putObject({
+          Bucket: 'capacitacion-onmodo',
+          Key: fileName,
+          Body: newBuffer,
+          ContentEncoding: 'base64',
+          ContentType: 'image/jpeg'
+        }).promise();
+
+        const fileUrl = `https://capacitacion-onmodo.s3.amazonaws.com/${fileName}`;
+        return fileUrl;
+      });
+
+      const [disposicionUrls, transporteUrls] = await Promise.all([
+        Promise.all(disposicionPromises),
+        Promise.all(transportePromises)
+      ]);
+
+      const entregaBidonesData = {
+        // Agrega las propiedades adicionales que necesites almacenar en la base de datos
+        // ...
+
+        certificadoDisposicion: disposicionUrls,
+        certificadoTransporte: transporteUrls,
+        inputs,
+        idUser,
+        rol,
+        nombre
+      };
+
+      const newEntregaBidones = new EntregaBidones(entregaBidonesData);
+      await newEntregaBidones.save();
+
+      // Añadir el nuevo formulario a la lista de entregabidones del usuario
+      await User.findOneAndUpdate(
+        { _id: newEntregaBidones.idUser },
+        { $push: { entregabidones: newEntregaBidones._id } },
+        { new: true }
+      );
+
+      return res.status(201).send({ message: "Formulario de entrega de bidones creado exitosamente" });
     } catch (error) {
+      console.error(error);
       return res.status(500).send({ error: error.message });
     }
   },
+
+  // Resto del código sin cambios...
   deleteForm: async (req, res) => {
     try {
       const formId = req.params.id; // Obtener el ID del registro a eliminar desde los parámetros de la solicitud

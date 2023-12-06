@@ -32,40 +32,37 @@ const editionController = {
     async getFilteredData(req, res) {
         try {
             const businessName = req.params.businessName;
-
-            console.log(businessName)
-
-            const carga = await Carga.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const chequeoEpp = await ChequeoEpp.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const controlalergenos = await ControlAlergenos.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const controlCloro = await ControlCloro.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const controlEquipoFrio = await ControlEquipoFrio.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const controlProcesos = await ControlProceso.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const controlVidrio = await ControlVidrio.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const descongelamiento = await Descongelamiento.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const despachoProduccion = await DespachoProduccion.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const distribucion = await Distribucion.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const entregaBidones = await EntregaBidones.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const entregaRopa = await EntregaRopa.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const flashIncidente = await FlashIncidente.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const informeIntAccidente = await InformeIntAccidente.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const planillaArmado = await PlanillaArmado.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const recepcion = await Recepcion.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const recuperacionProducto = await RecuperacionProducto.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const registroCapacitacion = await RegistroCapacitacion.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const registroDecomiso = await RegistroDecomiso.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const registrosimulacro = await RegistroSimulacro.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const reporteRechazo = await ReporteRechazo.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const saludManipuladores = await SaludManipuladores.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const sanitizacion = await Sanitizacion.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const servicioEnLinea = await ServicioEnLinea.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const usoCambioAceite = await UsoCambioAceite.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const verificacionBalanza = await VerificacionBalanza.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-            const verificacionTermometros = await VerificacionTermometros.find({ status: { $exists: true, $ne: '' }, businessName: businessName });
-
-
-            // Puedes hacer lo mismo para más modelos si es necesario
-
+    
+            console.log(businessName);
+    
+            const carga = await Carga.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const chequeoEpp = await ChequeoEpp.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const controlalergenos = await ControlAlergenos.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const controlCloro = await ControlCloro.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const controlEquipoFrio = await ControlEquipoFrio.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const controlProcesos = await ControlProceso.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const controlVidrio = await ControlVidrio.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const descongelamiento = await Descongelamiento.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const despachoProduccion = await DespachoProduccion.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const distribucion = await Distribucion.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const entregaBidones = await EntregaBidones.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const entregaRopa = await EntregaRopa.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const flashIncidente = await FlashIncidente.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const informeIntAccidente = await InformeIntAccidente.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const planillaArmado = await PlanillaArmado.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const recepcion = await Recepcion.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const recuperacionProducto = await RecuperacionProducto.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const registroCapacitacion = await RegistroCapacitacion.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const registroDecomiso = await RegistroDecomiso.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const registrosimulacro = await RegistroSimulacro.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const reporteRechazo = await ReporteRechazo.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const saludManipuladores = await SaludManipuladores.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const sanitizacion = await Sanitizacion.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const servicioEnLinea = await ServicioEnLinea.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const usoCambioAceite = await UsoCambioAceite.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const verificacionBalanza = await VerificacionBalanza.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+            const verificacionTermometros = await VerificacionTermometros.find({ status: { $exists: true, $ne: '', $not: /free/i }, businessName: businessName });
+    
             // Combina los datos de ambos modelos o haz lo que necesites con ellos
             const combinedData = {
                 carga: carga,
@@ -96,7 +93,7 @@ const editionController = {
                 verificacionBalanza: verificacionBalanza,
                 verificacionTermometros: verificacionTermometros
             };
-
+    
             // Envía la respuesta con los datos filtrados
             res.json(combinedData);
         } catch (error) {

@@ -34,6 +34,7 @@ const editionController = require('../controllers/editionController')
 const recordatorioController = require('../controllers/recordatorioController')
 const businessController = require('../controllers/BusinessController')
 const dietasEspecialesController = require('../controllers/dietasEspecialesController')
+const statsController = require('../controllers/statsController')
 require('../config/passport')
 
 // User
@@ -65,8 +66,11 @@ router.route('/newbusiness/:name')
 router.route('/newbusiness/:_id')
     .put(businessController.editBusiness)
 
-router.route('/users/stats/:business')
-    .get(userController.countUsersByBusiness)
+router.route('/statsusers/:businessName')
+    .get(statsController.countUsersByBusiness)
+
+router.route('/statsforms/:businessName')
+    .get(statsController.formsCreatedPerMonthByBusiness)
 
 // Password
 
@@ -94,6 +98,7 @@ router.route('/carga/:formId')
 router.route('/cargaedit/:formId')
     .put(cargaController.editFormById)
 
+
 // ChequeoEpp
 router.route('/chequeoepp')
     .post(chequeoEppController.newChequeo)
@@ -107,15 +112,15 @@ router.route('/chequeoeppedit/:formId')
     .put(chequeoEppController.editFormById)
 
 // Control Alergenos 
-router.route('/controlalergenos')
+router.route('/dietasespeciales')
     .post(controlAlergenosController.newControlAlergenos)
-router.route('/controlalergenos/:id')
+router.route('/dietasespeciales/:id')
     .delete(controlAlergenosController.deleteForm)
-router.route('/controlalergernos/:userId')
+router.route('/dietasespeciales/:userId')
     .get(controlAlergenosController.getFormsByUserIdAndStatus)
-router.route('/controlalergernos/:formId')
+router.route('/dietasespeciales/:formId')
     .put(controlAlergenosController.editFormProperties)
-router.route('/controlalergernosedit/:formId')
+router.route('/dietasespeciales/:formId')
     .put(controlAlergenosController.editFormById)
 
 // Control Cloro 
@@ -408,8 +413,8 @@ router.route('/verificaciontermometrosedit/:formId')
     .put(verificacionTermometrosController.editFormById)
 
 // Dietas especiales
-router.route('/dietasespeciales')
-    .post(dietasEspecialesController.newDietasEspeciales)
+// router.route('/dietasespeciales')
+//     .post(dietasEspecialesController.newDietasEspeciales)
 
 // Edition 
 

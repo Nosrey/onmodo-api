@@ -11,6 +11,7 @@ const controlVidriosSchema = new mongoose.Schema({
     motivoRespuesta: { type: String },
     whoApproved: { type: String },
     businessName:{ type: String },
+    rol: { type: String },
     idUser: [{ type: mongoose.Schema.ObjectId, ref: "user" }]
 
 }, { timestamps: true })

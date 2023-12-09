@@ -3,7 +3,8 @@ const mongoose = require('mongoose')
 const controlAlergenosSchema = new mongoose.Schema({
     comedor: { type: String, required: true },
     inputs: { type: Array },
-    verified: { type: String, required: true },
+    certificados:{type:Array},
+    verified: { type: String },
     date: { type: String, required: false },
     status: { type: String, default: "" },
     editEnabled: { type: Boolean },
@@ -14,8 +15,8 @@ const controlAlergenosSchema = new mongoose.Schema({
     motivoRespuesta: { type: String },
     whoApproved: { type: String },
     rol: { type: String },
-    nombre:{ type: String },
-    businessName:{ type: String },
+    nombre: { type: String },
+    businessName: { type: String },
     idUser: [{ type: mongoose.Schema.ObjectId, ref: "user" }]
 
 }, { timestamps: true })

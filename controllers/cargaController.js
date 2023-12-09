@@ -3,7 +3,45 @@ const User = require("../models/User");
 
 
 const cargaController = {
+  formsCreatedPerMonthByBusiness: async (req, res) => {
+    try {
+      const { businessName } = req.params;
 
+      const formsPerMonth = await Carga.aggregate([
+        {
+          $match: { businessName: businessName },
+        },
+        {
+          $project: {
+            month: { $month: "$createdAt" },
+            year: { $year: "$createdAt" },
+          },
+        },
+        {
+          $group: {
+            _id: {
+              month: "$month",
+              year: "$year",
+            },
+            count: { $sum: 1 },
+          },
+        },
+        {
+          $sort: { "_id.year": 1, "_id.month": 1 },
+        },
+      ]);
+
+      const result = formsPerMonth.map((entry) => ({
+        month: entry._id.month,
+        year: entry._id.year,
+        count: entry.count,
+      }));
+
+      return res.status(200).send({ formsPerMonth: result });
+    } catch (error) {
+      return res.status(500).send({ error: error.message });
+    }
+  },
 
   newCarga: async (req, res) => {
     try {

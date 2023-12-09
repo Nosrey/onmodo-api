@@ -5,6 +5,7 @@ const aws = require("aws-sdk");
 const multer = require("multer");
 const multerS3 = require("multer-s3");
 const { Buffer } = require('buffer');
+const { v4: uuidv4 } = require('uuid');
 
 aws.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY,
@@ -30,81 +31,116 @@ const entregaBidonesController = {
 
   newEntregaBidones: async (req, res) => {
     try {
-      const { certificadoDisposicion, certificadoTransporte, inputs, idUser, rol, nombre } = req.body;
-
-      // Verificar si los arrays existen y contienen datos
-      if (!certificadoDisposicion || !certificadoTransporte ||
-        certificadoDisposicion.length === 0 || certificadoTransporte.length === 0) {
-        return res.status(400).send({ message: "Certificados no proporcionados correctamente" });
-      }
-
-      const disposicionPromises = certificadoDisposicion.map(async (base64String, index) => {
-        const newBuffer = Buffer.from(base64String.replace(/^data:.+;base64,/, ''), 'base64');
-
-        const fileName = `disposicion_${index + 1}.jpeg`;
-
-        await s3.putObject({
-          Bucket: 'capacitacion-onmodo',
-          Key: fileName,
-          Body: newBuffer,
-          ContentEncoding: 'base64',
-          ContentType: 'image/jpeg'
-        }).promise();
-
-        const fileUrl = `https://capacitacion-onmodo.s3.amazonaws.com/${fileName}`;
-        return fileUrl;
-      });
-
-      const transportePromises = certificadoTransporte.map(async (base64String, index) => {
-        const newBuffer = Buffer.from(base64String.replace(/^data:.+;base64,/, ''), 'base64');
-
-        const fileName = `transporte_${index + 1}.jpeg`;
-
-        await s3.putObject({
-          Bucket: 'capacitacion-onmodo',
-          Key: fileName,
-          Body: newBuffer,
-          ContentEncoding: 'base64',
-          ContentType: 'image/jpeg'
-        }).promise();
-
-        const fileUrl = `https://capacitacion-onmodo.s3.amazonaws.com/${fileName}`;
-        return fileUrl;
-      });
-
-      const [disposicionUrls, transporteUrls] = await Promise.all([
-        Promise.all(disposicionPromises),
-        Promise.all(transportePromises)
-      ]);
-
-      const entregaBidonesData = {
-        // Agrega las propiedades adicionales que necesites almacenar en la base de datos
-        // ...
-
-        certificadoDisposicion: disposicionUrls,
-        certificadoTransporte: transporteUrls,
+      let {
+        certificadoDisposicion = [],
+        certificadoTransporte = [],
         inputs,
+        date,
+        status,
+        editEnabled,
+        wasEdited,
+        dateLastEdition,
+        motivo,
+        motivoPeticion,
+        motivoRespuesta,
+        whoApproved,
+        businessName,
         idUser,
         rol,
         nombre
+      } = req.body;
+  
+      // Comprobación de certificadoDisposicion y certificadoTransporte
+      if (!certificadoDisposicion || !Array.isArray(certificadoDisposicion)) {
+        certificadoDisposicion = [];
+      }
+  
+      if (!certificadoTransporte || !Array.isArray(certificadoTransporte)) {
+        certificadoTransporte = [];
+      }
+  
+      const timestamp = Date.now();
+  
+      const disposicionPromises = certificadoDisposicion.map(async (base64String, index) => {
+        if (base64String) {
+          const newBuffer = Buffer.from(base64String.replace(/^data:.+;base64,/, ''), 'base64');
+          const fileName = `disposicion_${timestamp}_${index + 1}_${uuidv4()}.jpeg`;
+  
+          await s3.putObject({
+            Bucket: 'capacitacion-onmodo',
+            Key: fileName,
+            Body: newBuffer,
+            ContentEncoding: 'base64',
+            ContentType: 'image/jpeg',
+          }).promise();
+  
+          const fileUrl = `https://capacitacion-onmodo.s3.amazonaws.com/${fileName}`;
+          return fileUrl;
+        } else {
+          return null; // O puedes manejar este caso de otra manera según tus necesidades
+        }
+      });
+  
+      const transportePromises = certificadoTransporte.map(async (base64String, index) => {
+        if (base64String) {
+          const newBuffer = Buffer.from(base64String.replace(/^data:.+;base64,/, ''), 'base64');
+          const fileName = `transporte_${timestamp}_${index + 1}_${uuidv4()}.jpeg`;
+  
+          await s3.putObject({
+            Bucket: 'capacitacion-onmodo',
+            Key: fileName,
+            Body: newBuffer,
+            ContentEncoding: 'base64',
+            ContentType: 'image/jpeg',
+          }).promise();
+  
+          const fileUrl = `https://capacitacion-onmodo.s3.amazonaws.com/${fileName}`;
+          return fileUrl;
+        } else {
+          return null; // O puedes manejar este caso de otra manera según tus necesidades
+        }
+      });
+  
+      const [disposicionUrls, transporteUrls] = await Promise.all([
+        Promise.all(disposicionPromises),
+        Promise.all(transportePromises),
+      ]);
+  
+      const entregaBidonesData = {
+        certificadoDisposicion: disposicionUrls.filter(url => url !== null), // Filtrar nulls
+        certificadoTransporte: transporteUrls.filter(url => url !== null), // Filtrar nulls
+        inputs,
+        date,
+        status,
+        editEnabled,
+        wasEdited,
+        dateLastEdition,
+        motivo,
+        motivoPeticion,
+        motivoRespuesta,
+        whoApproved,
+        businessName,
+        idUser,
+        rol,
+        nombre,
       };
-
+  
       const newEntregaBidones = new EntregaBidones(entregaBidonesData);
       await newEntregaBidones.save();
-
-      // Añadir el nuevo formulario a la lista de entregabidones del usuario
+  
       await User.findOneAndUpdate(
         { _id: newEntregaBidones.idUser },
         { $push: { entregabidones: newEntregaBidones._id } },
         { new: true }
       );
-
+  
       return res.status(201).send({ message: "Formulario de entrega de bidones creado exitosamente" });
     } catch (error) {
       console.error(error);
       return res.status(500).send({ error: error.message });
     }
   },
+  
 
   // Resto del código sin cambios...
   deleteForm: async (req, res) => {
@@ -223,41 +259,91 @@ const entregaBidonesController = {
     try {
       const formId = req.params.formId; // Obtener el ID del formulario a editar desde los parámetros de la solicitud
       const formData = req.body; // Obtener los datos actualizados desde el cuerpo de la solicitud
-
+  
       // Obtener el formulario existente
       const existingForm = await EntregaBidones.findById(formId);
-
+  
       if (!existingForm) {
         return res.status(404).send({ message: "Form not found" });
       }
-
+  
       // Verificar si editEnabled es true en el formulario existente
       if (!existingForm.editEnabled) {
         return res.status(403).send({ message: "Editing is not allowed for this form" });
       }
-
+  
+      // Manejar la edición de archivos si hay cambios en los certificados de disposición
+      if (formData.certificadoDisposicion && formData.certificadoDisposicion.length > 0) {
+        const disposicionUrls = formData.certificadoDisposicion.map(async (base64String, index) => {
+          if (base64String) {
+            const newBuffer = Buffer.from(base64String.replace(/^data:.+;base64,/, ''), 'base64');
+            const fileName = `disposicion_${Date.now()}_${index + 1}_${uuidv4()}.jpeg`;
+  
+            await s3.putObject({
+              Bucket: 'capacitacion-onmodo',
+              Key: fileName,
+              Body: newBuffer,
+              ContentEncoding: 'base64',
+              ContentType: 'image/jpeg',
+            }).promise();
+  
+            const fileUrl = `https://capacitacion-onmodo.s3.amazonaws.com/${fileName}`;
+            return fileUrl;
+          } else {
+            return null;
+          }
+        });
+  
+        formData.certificadoDisposicion = (await Promise.all(disposicionUrls)).filter(url => url !== null);
+      }
+  
+      // Manejar la edición de archivos si hay cambios en los certificados de transporte
+      if (formData.certificadoTransporte && formData.certificadoTransporte.length > 0) {
+        const transporteUrls = formData.certificadoTransporte.map(async (base64String, index) => {
+          if (base64String) {
+            const newBuffer = Buffer.from(base64String.replace(/^data:.+;base64,/, ''), 'base64');
+            const fileName = `transporte_${Date.now()}_${index + 1}_${uuidv4()}.jpeg`;
+  
+            await s3.putObject({
+              Bucket: 'capacitacion-onmodo',
+              Key: fileName,
+              Body: newBuffer,
+              ContentEncoding: 'base64',
+              ContentType: 'image/jpeg',
+            }).promise();
+  
+            const fileUrl = `https://capacitacion-onmodo.s3.amazonaws.com/${fileName}`;
+            return fileUrl;
+          } else {
+            return null;
+          }
+        });
+  
+        formData.certificadoTransporte = (await Promise.all(transporteUrls)).filter(url => url !== null);
+      }
+  
       // Actualizar el formulario utilizando findByIdAndUpdate
       const updatedForm = await EntregaBidones.findByIdAndUpdate(formId, formData, { new: true });
-
+  
       if (!updatedForm) {
         return res.status(404).send({ message: "Form not found" });
       }
-
+  
       // Actualizar la lista de formularios en el modelo User
       const user = await User.findOne({ _id: updatedForm.idUser });
       if (!user) {
         return res.status(404).send({ message: "User not found" });
       }
-
+  
       // Buscar el índice del formulario en la lista de formularios del usuario
       const formIndex = user.entregabidones.indexOf(formId);
-
+  
       // Reemplazar el formulario antiguo con el formulario actualizado
       if (formIndex !== -1) {
         user.entregabidones.splice(formIndex, 1, updatedForm._id);
         await user.save();
       }
-
+  
       return res.status(200).send({ message: "Form updated successfully", updatedForm });
     } catch (error) {
       return res.status(500).send({ error: error.message });

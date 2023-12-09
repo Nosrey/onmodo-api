@@ -1,52 +1,91 @@
 const FlashIncidente = require("../models/FlashIncidente");
 const User = require("../models/User");
+const crypto = require('crypto')
+const aws = require("aws-sdk");
+const multer = require("multer");
+const multerS3 = require("multer-s3");
+const { Buffer } = require('buffer');
 
+aws.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY,
+  secretAccessKey: process.env.AWS_SECRET_KEY
+});
+
+const s3 = new aws.S3();
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: "capacitacion-onmodo",
+
+    key: (req, file, cb) => {
+      crypto.randomBytes(16, (err, hash) => {
+        if (err) cb(err, hash);
+        const fileName = `${hash.toString('hex')}`;
+        cb(null, fileName);
+      });
+    }
+  })
+});
 
 const flashIncidenteController = {
 
+
   newFlashIncidente: async (req, res) => {
     try {
-      const newFlashIncidente = new FlashIncidente({
-        alcance: req.body.alcance,
-        linea: req.body.linea,
-        fecha: req.body.fecha,
-        hora: req.body.hora,
-        comedor: req.body.comedor,
-        responsable: req.body.responsable,
-        incidentePotencial: req.body.incidentePotencial,
-        tipo: req.body.tipo,
-        descripcion: req.body.descripcion,
-        fotografia: req.body.fotografia,
-        acciones: req.body.acciones,
-        nombreAsesor: req.body.nombreAsesor,
-        firmaAsesor: req.body.firmaAsesor,
-        nombreSupervisor: req.body.nombreSupervisor,
-        firmaSupervisor: req.body.firmaSupervisor,
-        nombreGerente: req.body.nombreGerente,
-        firmaGerente: req.body.firmaGerente,
-        date: req.body.date,
-        status: req.body.status,
-        editEnabled: req.body.editEnabled,
-        wasEdited: req.body.wasEdited,
-        dateLastEdition: req.body.dateLastEdition,
-        motivo: req.body.motivo,
-        motivoPeticion: req.body.motivoPeticion,
-        motivoRespuesta: req.body.motivoRespuesta,
-        whoApproved: req.body.whoApproved,
-        rol: req.body.rol,
-        nombre: req.body.nombre,
-        businessName: req.body.businessName,
-        idUser: req.body.idUser
-      });
-      var id = newFlashIncidente._id
-      await User.findOneAndUpdate({ _id: req.body.idUser }, { $push: { flashincidente: id } }, { new: true })
-      await newFlashIncidente.save();
-      return res.status(200).send({ message: 'Flash Incidente created successfully' });
+      const { fotografias= [], idUser, nombre } = req.body;
+
+      console.log(req)
+      // const planillaFile = req.file;
+
+      // const fotografiasBuffer = Buffer.from(fotografias.replace(/^data:.+;base64,/, ''), 'base64');
+
+      // const fotografiasFileName = `fotografias_${crypto.randomBytes(16).toString('hex')}.jpeg`;
+
+      // await Promise.all([
+      //   s3.putObject({
+      //     Bucket: 'capacitacion-onmodo',
+      //     Key: fotografiasFileName,
+      //     Body: fotografiasBuffer,
+      //     ContentEncoding: 'base64',
+      //     ContentType: 'image/jpeg'
+      //   }).promise(),
+      //   // Subir la planilla directamente desde el archivo adjunto
+      //   s3.upload({
+      //     Bucket: 'capacitacion-onmodo',
+      //     Key: planillaFile.originalname,
+      //     Body: planillaFile.buffer,
+      //     ContentType: planillaFile.mimetype
+      //   }).promise()
+      // ]);
+
+      // const fotografiasFileUrl = `https://capacitacion-onmodo.s3.amazonaws.com/${fotografiasFileName}`;
+      // const planillaFileUrl = `https://capacitacion-onmodo.s3.amazonaws.com/${planillaFile.originalname}`;
+
+      // const newFlashIncidente = new FlashIncidente({
+      //   // Incluir los demás campos necesarios para crear un nuevo incidente flash
+      //   planilla: planillaFileUrl,
+      //   fotografias: fotografiasFileUrl,
+      //   idUser,
+      //   nombre
+      // });
+
+      // const id = newFlashIncidente._id;
+
+      // // Añadir el nuevo incidente flash a la lista de incidentes flash del usuario
+      // await User.findOneAndUpdate(
+      //   { _id: idUser },
+      //   { $push: { flashincidente: id } },
+      //   { new: true }
+      // );
+
+      // await newFlashIncidente.save();
+
+      return res.status(200).send({ message: 'Incidente Flash creado exitosamente' });
 
     } catch (error) {
+      console.error(error);
       return res.status(500).send({ error: error.message });
     }
-
   },
 
   deleteForm: async (req, res) => {

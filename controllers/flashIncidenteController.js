@@ -29,58 +29,112 @@ const upload = multer({
 
 const flashIncidenteController = {
 
-
   newFlashIncidente: async (req, res) => {
     try {
-      const { fotografias= [], idUser, nombre } = req.body;
+      const {
+        fotografias = [],
+        fecha,
+        hora,
+        comedor,
+        responsable,
+        incidentePotencial,
+        tipo,
+        descripcion,
+        acciones,
+        planilla,
+        date,
+        status,
+        editEnabled,
+        wasEdited,
+        dateLastEdition,
+        motivo,
+        motivoPeticion,
+        motivoRespuesta,
+        whoApproved,
+        businessName,
+        idUser,
+        rol,
+        nombre
+      } = req.body;
 
-      console.log(req)
-      // const planillaFile = req.file;
+      // Si fotografias es un array vacío, asigna un array vacío por defecto
+      const fotografiasArray = Array.isArray(fotografias) ? fotografias : [];
 
-      // const fotografiasBuffer = Buffer.from(fotografias.replace(/^data:.+;base64,/, ''), 'base64');
+      // Si planilla es un string vacío, asigna una cadena vacía por defecto
+      const planillaString = typeof planilla === 'string' ? planilla : '';
 
-      // const fotografiasFileName = `fotografias_${crypto.randomBytes(16).toString('hex')}.jpeg`;
+      // Upload fotografias
+      const fotografiasUrls = fotografiasArray.map(async (base64String, index) => {
+        if (base64String) {
+          const newBuffer = Buffer.from(base64String.replace(/^data:.+;base64,/, ''), 'base64');
+          const fileName = `certificado_${index + 1}_${Date.now()}.jpeg`;
 
-      // await Promise.all([
-      //   s3.putObject({
-      //     Bucket: 'capacitacion-onmodo',
-      //     Key: fotografiasFileName,
-      //     Body: fotografiasBuffer,
-      //     ContentEncoding: 'base64',
-      //     ContentType: 'image/jpeg'
-      //   }).promise(),
-      //   // Subir la planilla directamente desde el archivo adjunto
-      //   s3.upload({
-      //     Bucket: 'capacitacion-onmodo',
-      //     Key: planillaFile.originalname,
-      //     Body: planillaFile.buffer,
-      //     ContentType: planillaFile.mimetype
-      //   }).promise()
-      // ]);
+          await s3.putObject({
+            Bucket: 'capacitacion-onmodo',
+            Key: fileName,
+            Body: newBuffer,
+            ContentEncoding: 'base64',
+            ContentType: 'image/jpeg'
+          }).promise();
 
-      // const fotografiasFileUrl = `https://capacitacion-onmodo.s3.amazonaws.com/${fotografiasFileName}`;
-      // const planillaFileUrl = `https://capacitacion-onmodo.s3.amazonaws.com/${planillaFile.originalname}`;
+          const fileUrl = `https://capacitacion-onmodo.s3.amazonaws.com/${fileName}`;
+          return fileUrl;
+        } else {
+          return null;
+        }
+      });
 
-      // const newFlashIncidente = new FlashIncidente({
-      //   // Incluir los demás campos necesarios para crear un nuevo incidente flash
-      //   planilla: planillaFileUrl,
-      //   fotografias: fotografiasFileUrl,
-      //   idUser,
-      //   nombre
-      // });
+      // Upload planilla
+      let planillaUrl = null;
+      if (planillaString) {
+        const planillaBuffer = Buffer.from(planillaString.replace(/^data:.+;base64,/, ''), 'base64');
+        const planillaFileName = `planilla_${Date.now()}.jpeg`;
 
-      // const id = newFlashIncidente._id;
+        await s3.putObject({
+          Bucket: 'capacitacion-onmodo',
+          Key: planillaFileName,
+          Body: planillaBuffer,
+          ContentEncoding: 'base64',
+          ContentType: 'image/jpeg'
+        }).promise();
 
-      // // Añadir el nuevo incidente flash a la lista de incidentes flash del usuario
-      // await User.findOneAndUpdate(
-      //   { _id: idUser },
-      //   { $push: { flashincidente: id } },
-      //   { new: true }
-      // );
+        planillaUrl = `https://capacitacion-onmodo.s3.amazonaws.com/${planillaFileName}`;
+      }
 
-      // await newFlashIncidente.save();
+      const fotografiasUrlsArray = (await Promise.all(fotografiasUrls)).filter(url => url !== null);
 
-      return res.status(200).send({ message: 'Incidente Flash creado exitosamente' });
+      const newFlashIncidenteData = {
+        fotografias: fotografiasUrlsArray,
+        planilla: planillaUrl,
+        fecha,
+        hora,
+        responsable,
+        incidentePotencial,
+        tipo,
+        descripcion,
+        acciones,
+        comedor,
+        date,
+        status,
+        editEnabled,
+        wasEdited,
+        dateLastEdition,
+        motivo,
+        motivoPeticion,
+        motivoRespuesta,
+        whoApproved,
+        businessName,
+        idUser,
+        rol,
+        nombre
+      };
+
+      const newFlashIncidente = new FlashIncidente(newFlashIncidenteData);
+      var id = newFlashIncidente._id;
+      await User.findOneAndUpdate({ _id: idUser }, { $push: { flashincidente: id } }, { new: true });
+      await newFlashIncidente.save();
+
+      return res.status(200).send({ message: 'Flash Incidente created successfully' });
 
     } catch (error) {
       console.error(error);
@@ -217,6 +271,48 @@ const flashIncidenteController = {
         return res.status(403).send({ message: "Editing is not allowed for this form" });
       }
 
+      // Upload de nuevas fotografías si se proporcionaron en la solicitud
+      if (formData.fotografias && formData.fotografias.length > 0) {
+        const fotografiasUrls = formData.fotografias.map(async (base64String, index) => {
+          if (base64String) {
+            const newBuffer = Buffer.from(base64String.replace(/^data:.+;base64,/, ''), 'base64');
+            const fileName = `certificado_${index + 1}_${Date.now()}.jpeg`;
+
+            await s3.putObject({
+              Bucket: 'capacitacion-onmodo',
+              Key: fileName,
+              Body: newBuffer,
+              ContentEncoding: 'base64',
+              ContentType: 'image/jpeg'
+            }).promise();
+
+            const fileUrl = `https://capacitacion-onmodo.s3.amazonaws.com/${fileName}`;
+            return fileUrl;
+          } else {
+            return null;
+          }
+        });
+
+        // Esperar a que se completen todas las cargas y filtrar los URLs no nulos
+        formData.fotografias = (await Promise.all(fotografiasUrls)).filter(url => url !== null);
+      }
+
+      // Upload de nueva planilla si se proporcionó en la solicitud
+      if (formData.planilla) {
+        const planillaBuffer = Buffer.from(formData.planilla.replace(/^data:.+;base64,/, ''), 'base64');
+        const planillaFileName = `planilla_${Date.now()}.jpeg`;
+
+        await s3.putObject({
+          Bucket: 'capacitacion-onmodo',
+          Key: planillaFileName,
+          Body: planillaBuffer,
+          ContentEncoding: 'base64',
+          ContentType: 'image/jpeg'
+        }).promise();
+
+        formData.planilla = `https://capacitacion-onmodo.s3.amazonaws.com/${planillaFileName}`;
+      }
+
       // Actualizar el formulario utilizando findByIdAndUpdate
       const updatedForm = await FlashIncidente.findByIdAndUpdate(formId, formData, { new: true });
 
@@ -243,7 +339,7 @@ const flashIncidenteController = {
     } catch (error) {
       return res.status(500).send({ error: error.message });
     }
-  },
+  }
 }
 
 module.exports = flashIncidenteController

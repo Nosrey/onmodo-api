@@ -1,9 +1,9 @@
 const mongoose = require('mongoose')
 
 const controlAlergenosSchema = new mongoose.Schema({
-    comedor: { type: String, required: true },
+    comedor: { type: String },
     inputs: { type: Array },
-    certificados:{type:Array},
+    certificados: { type: Array },
     verified: { type: String },
     date: { type: String, required: false },
     status: { type: String, default: "" },

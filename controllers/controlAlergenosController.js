@@ -33,13 +33,12 @@ const controlAlergenosController = {
   newControlAlergenos: async (req, res) => {
     try {
       const { certificados = [], inputs, comedor, verified, date, status, editEnabled, wasEdited, dateLastEdition, motivo, motivoPeticion, motivoRespuesta, whoApproved, businessName, idUser, rol, nombre } = req.body;
-
-
-      const certificadosUrls = certificados.map(async (base64String, index) => {
+  
+      const certificadosUrls = await Promise.all(certificados.map(async (base64String, index) => {
         if (base64String) {
           const newBuffer = Buffer.from(base64String.replace(/^data:.+;base64,/, ''), 'base64');
           const fileName = `certificado_${index + 1}_${Date.now()}.jpeg`;
-      
+  
           await s3.putObject({
             Bucket: 'capacitacion-onmodo',
             Key: fileName,
@@ -47,17 +46,16 @@ const controlAlergenosController = {
             ContentEncoding: 'base64',
             ContentType: 'image/jpeg'
           }).promise();
-      
+  
           const fileUrl = `https://capacitacion-onmodo.s3.amazonaws.com/${fileName}`;
           return fileUrl;
         } else {
           return null; // o algún valor por defecto si lo prefieres
         }
-      });
-      
-      const certificadosUrlsArray = (await Promise.all(certificadosUrls)).filter(url => url !== null);
+      }));
+  
       const newControlAlergenosData = {
-        certificados: certificadosUrlsArray,
+        certificados: certificadosUrls,
         inputs,
         comedor,
         verified,
@@ -75,14 +73,14 @@ const controlAlergenosController = {
         rol,
         nombre
       };
-
+  
       const newControlAlergenos = new ControlAlergenos(newControlAlergenosData);
       var id = newControlAlergenos._id;
       await User.findOneAndUpdate({ _id: idUser }, { $push: { controlalergenos: id } }, { new: true });
       await newControlAlergenos.save();
-
+  
       return res.status(200).send({ message: 'Control Alergenos created successfully' });
-
+  
     } catch (error) {
       console.error(error);
       return res.status(500).send({ error: error.message });

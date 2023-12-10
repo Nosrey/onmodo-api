@@ -4,6 +4,7 @@ const flashIncidenteSchema = new mongoose.Schema({
     alcance: { type: String, },
     linea: { type: String },
     fecha: { type: String, },
+    planilla:{type:String},
     hora: { type: String, },
     comedor: { type: String, },
     responsable: { type: String, },

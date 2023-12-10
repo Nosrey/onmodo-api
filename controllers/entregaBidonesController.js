@@ -77,7 +77,7 @@ const entregaBidonesController = {
           const fileUrl = `https://capacitacion-onmodo.s3.amazonaws.com/${fileName}`;
           return fileUrl;
         } else {
-          return null; // O puedes manejar este caso de otra manera según tus necesidades
+          return null;
         }
       });
   
@@ -97,7 +97,7 @@ const entregaBidonesController = {
           const fileUrl = `https://capacitacion-onmodo.s3.amazonaws.com/${fileName}`;
           return fileUrl;
         } else {
-          return null; // O puedes manejar este caso de otra manera según tus necesidades
+          return null;
         }
       });
   
@@ -107,8 +107,8 @@ const entregaBidonesController = {
       ]);
   
       const entregaBidonesData = {
-        certificadoDisposicion: disposicionUrls.filter(url => url !== null), // Filtrar nulls
-        certificadoTransporte: transporteUrls.filter(url => url !== null), // Filtrar nulls
+        certificadoDisposicion: disposicionUrls, // No filtrar nulls
+        certificadoTransporte: transporteUrls, // No filtrar nulls
         inputs,
         date,
         status,
@@ -134,7 +134,7 @@ const entregaBidonesController = {
         { new: true }
       );
   
-      return res.status(201).send({ message: "Formulario de entrega de bidones creado exitosamente" });
+      return res.status(200).send({ message: "Formulario de entrega de bidones creado exitosamente" });
     } catch (error) {
       console.error(error);
       return res.status(500).send({ error: error.message });

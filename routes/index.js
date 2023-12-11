@@ -120,7 +120,7 @@ router.route('/dietasespeciales/:userId')
     .get(controlAlergenosController.getFormsByUserIdAndStatus)
 router.route('/dietasespeciales/:formId')
     .put(controlAlergenosController.editFormProperties)
-router.route('/dietasespeciales/:formId')
+router.route('/dietasespecialesedit/:formId')
     .put(controlAlergenosController.editFormById)
 
 // Control Cloro 

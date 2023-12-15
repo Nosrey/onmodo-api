@@ -307,8 +307,13 @@ const flashIncidenteController = {
         }
       }
 
-      // Upload de nueva planilla si se proporcionó en la solicitud
-      if (formData.planilla) {
+      // Verificar si formData.planilla está presente y es una cadena de base64 válida
+      if (
+        formData.planilla &&
+        typeof formData.planilla === "string" &&
+        formData.planilla.startsWith("data:application/")
+      ) {
+        // Upload de nueva planilla solo si es una cadena de base64 válida
         const planillaBuffer = Buffer.from(formData.planilla.replace(/^data:.+;base64,/, ''), 'base64');
         const planillaFileName = `planilla_${Date.now()}.jpeg`;
 
@@ -317,10 +322,13 @@ const flashIncidenteController = {
           Key: planillaFileName,
           Body: planillaBuffer,
           ContentEncoding: 'base64',
-          ContentType: 'image/jpeg'
+          ContentType: 'application/pdf'  // Cambiar el tipo MIME según el tipo de archivo de la planilla
         }).promise();
 
         formData.planilla = `https://capacitacion-onmodo.s3.amazonaws.com/${planillaFileName}`;
+      } else {
+        // Si no es una cadena de base64 válida, deja la propiedad planilla sin cambios
+        delete formData.planilla;
       }
 
       // Actualizar el formulario utilizando findByIdAndUpdate

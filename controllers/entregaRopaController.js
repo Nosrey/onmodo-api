@@ -3,46 +3,99 @@ const User = require("../models/User");
 
 
 const entregaRopaController = {
-
   newEntregaRopa: async (req, res) => {
-    try {
-      const newEntregaRopa = new EntregaRopa({
-        nombre: req.body.nombre,
-        contrato: req.body.contrato,
-        dni: req.body.dni,
-        direccion: req.body.direccion,
-        localidad: req.body.localidad,
-        cp: req.body.cp,
-        provincia: req.body.provincia,
-        descripcion: req.body.descripcion,
-        checkboxes: req.body.checkboxes,
-        inputs: req.body.inputs,
-        infoAdicional: req.body.infoAdicional,
-        date: req.body.date,
-        status: req.body.status,
-        editEnabled: req.body.editEnabled,
-        wasEdited: req.body.wasEdited,
-        dateLastEdition: req.body.dateLastEdition,
-        motivo: req.body.motivo,
-        motivoPeticion: req.body.motivoPeticion,
-        motivoRespuesta: req.body.motivoRespuesta,
-        whoApproved: req.body.whoApproved,
-        rol: req.body.rol,
-        nombre: req.body.nombre,
-        businessName: req.body.businessName,
-        nombreUsuario: req.body.nombreUsuario,
-        idUser: req.body.idUser
+    const uploadPromise = new Promise((resolve, reject) => {
+      upload.single("firma")(req, res, (err) => {
+        console.log(req);
+
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          resolve();
+        }
       });
-      var id = newEntregaRopa._id
-      await User.findOneAndUpdate({ _id: req.body.idUser }, { $push: { entregaropa: id } }, { new: true })
+    });
+
+    try {
+      await uploadPromise; // Wait for image upload to complete
+
+      const {
+        nombre,
+        contrato,
+        dni,
+        direccion,
+        localidad,
+        cp,
+        provincia,
+        descripcion,
+        checkboxes,
+        inputs,
+        infoAdicional,
+        date,
+        status,
+        editEnabled,
+        wasEdited,
+        dateLastEdition,
+        motivo,
+        motivoPeticion,
+        motivoRespuesta,
+        whoApproved,
+        rol,
+        businessName,
+        nombreUsuario,
+        idUser
+      } = req.body;
+
+      const firma = req.file ? req.file.location || "" : ""; // Asigna la ubicación o cadena vacía
+
+      const newEntregaRopa = new EntregaRopa({
+        nombre,
+        contrato,
+        dni,
+        direccion,
+        localidad,
+        cp,
+        provincia,
+        descripcion,
+        checkboxes,
+        inputs,
+        infoAdicional,
+        date,
+        status,
+        editEnabled,
+        wasEdited,
+        dateLastEdition,
+        motivo,
+        motivoPeticion,
+        motivoRespuesta,
+        whoApproved,
+        rol,
+        nombre,
+        businessName,
+        nombreUsuario,
+        idUser,
+        firma: firma // Establece la URL de la imagen del perfil desde S3 o una cadena vacía
+      });
+
+      var id = newEntregaRopa._id;
+
+      await User.findOneAndUpdate(
+        { _id: req.body.idUser },
+        { $push: { entregaropa: id } },
+        { new: true }
+      );
+
       await newEntregaRopa.save();
-      return res.status(200).send({ message: 'Entrega Ropa created successfully' });
 
+      return res.status(200).send({ message: "Entrega Ropa created successfully" });
     } catch (error) {
-      return res.status(500).send({ error: error.message });
+      console.log(error);
+      return res.json({ success: false, error: error });
     }
-
   },
+
+
   deleteForm: async (req, res) => {
     try {
       const formId = req.params.id; // Obtener el ID del registro a eliminar desde los parámetros de la solicitud
@@ -158,47 +211,68 @@ const entregaRopaController = {
   editFormById: async (req, res) => {
     try {
       const formId = req.params.formId; // Obtener el ID del formulario a editar desde los parámetros de la solicitud
-      const formData = req.body; // Obtener los datos actualizados desde el cuerpo de la solicitud
 
-      // Obtener el formulario existente
-      const existingForm = await EntregaRopa.findById(formId);
+      // Use multer to parse the form data
+      upload.single("firma")(req, res, async (err) => {
+        if (err) {
+          console.log(err);
+          return res.status(400).send({ error: "Error parsing form data" });
+        }
 
-      if (!existingForm) {
-        return res.status(404).send({ message: "Form not found" });
-      }
+        const formData = req.body; // Obtener los datos actualizados desde el cuerpo de la solicitud
 
-      // Verificar si editEnabled es true en el formulario existente
-      if (!existingForm.editEnabled) {
-        return res.status(403).send({ message: "Editing is not allowed for this form" });
-      }
+        // Obtener el formulario existente
+        const existingForm = await EntregaRopa.findById(formId);
 
-      // Actualizar el formulario utilizando findByIdAndUpdate
-      const updatedForm = await EntregaRopa.findByIdAndUpdate(formId, formData, { new: true });
+        if (!existingForm) {
+          return res.status(404).send({ message: "Form not found" });
+        }
 
-      if (!updatedForm) {
-        return res.status(404).send({ message: "Form not found" });
-      }
+        // Verificar si editEnabled es true en el formulario existente
+        if (!existingForm.editEnabled) {
+          return res.status(403).send({ message: "Editing is not allowed for this form" });
+        }
 
-      // Actualizar la lista de formularios en el modelo User
-      const user = await User.findOne({ _id: updatedForm.idUser });
-      if (!user) {
-        return res.status(404).send({ message: "User not found" });
-      }
+        // Verificar si se proporciona una nueva imagen
+        if (req.file && req.file.location) {
+          // Eliminar la imagen anterior del bucket
+          if (existingForm.firma) {
+            const oldKey = existingForm.firma.split('/').pop();
+            await s3.deleteObject({ Bucket: "capacitacion-onmodo", Key: oldKey }).promise();
+          }
 
-      // Buscar el índice del formulario en la lista de formularios del usuario
-      const formIndex = user.entregaropa.indexOf(formId);
+          // Actualizar la firma con la nueva URL de la imagen en S3
+          formData.firma = req.file.location;
+        }
 
-      // Reemplazar el formulario antiguo con el formulario actualizado
-      if (formIndex !== -1) {
-        user.entregaropa.splice(formIndex, 1, updatedForm._id);
-        await user.save();
-      }
+        // Actualizar el formulario utilizando findByIdAndUpdate
+        const updatedForm = await EntregaRopa.findByIdAndUpdate(formId, formData, { new: true });
 
-      return res.status(200).send({ message: "Form updated successfully", updatedForm });
+        if (!updatedForm) {
+          return res.status(404).send({ message: "Form not found" });
+        }
+
+        // Actualizar la lista de formularios en el modelo User
+        const user = await User.findOne({ _id: updatedForm.idUser });
+        if (!user) {
+          return res.status(404).send({ message: "User not found" });
+        }
+
+        // Buscar el índice del formulario en la lista de formularios del usuario
+        const formIndex = user.entregaropa.indexOf(formId);
+
+        // Reemplazar el formulario antiguo con el formulario actualizado
+        if (formIndex !== -1) {
+          user.entregaropa.splice(formIndex, 1, updatedForm._id);
+          await user.save();
+        }
+
+        return res.status(200).send({ message: "Form updated successfully", updatedForm });
+      });
     } catch (error) {
       return res.status(500).send({ error: error.message });
     }
-  },
+  }
 }
 
 module.exports = entregaRopaController

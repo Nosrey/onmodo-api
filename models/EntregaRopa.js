@@ -13,7 +13,7 @@ const entregaRopaSchema = new mongoose.Schema({
     inputs: { type: Array, },
     infoAdicional: { type: String },
     date: { type: String },
-    status: { type: String, default: "" },
+    status: { type: String, default: "free" },
     editEnabled: { type: Boolean },
     wasEdited: { type: Boolean },
     dateLastEdition: { type: String },

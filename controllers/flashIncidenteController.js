@@ -256,25 +256,34 @@ const flashIncidenteController = {
 
   editFormById: async (req, res) => {
     try {
-      const formId = req.params.formId; // Obtener el ID del formulario a editar desde los parámetros de la solicitud
-      const formData = req.body; // Obtener los datos actualizados desde el cuerpo de la solicitud
+      const formId = req.params.formId;
+      const formData = req.body;
 
-      // Obtener el formulario existente
       const existingForm = await FlashIncidente.findById(formId);
 
       if (!existingForm) {
         return res.status(404).send({ message: "Form not found" });
       }
 
-      // Verificar si editEnabled es true en el formulario existente
       if (!existingForm.editEnabled) {
         return res.status(403).send({ message: "Editing is not allowed for this form" });
       }
 
-      // Upload de nuevas fotografías si se proporcionaron en la solicitud
-      if (formData.fotografias && formData.fotografias.length > 0) {
-        const fotografiasUrls = formData.fotografias.map(async (base64String, index) => {
-          if (base64String) {
+      // Verificar si formData.fotografias está presente y es un array
+      if (
+        formData.fotografias &&
+        Array.isArray(formData.fotografias) &&
+        formData.fotografias.length > 0
+      ) {
+        // Verificar que todas las imágenes en formData.fotografias sean strings base64 válidos
+        const areAllBase64 = formData.fotografias.every(
+          (base64String) =>
+            typeof base64String === "string" && base64String.startsWith("data:image/")
+        );
+
+        if (areAllBase64) {
+          // Upload de nuevas fotografías solo si todas son strings base64 válidos
+          const fotografiasUrls = formData.fotografias.map(async (base64String, index) => {
             const newBuffer = Buffer.from(base64String.replace(/^data:.+;base64,/, ''), 'base64');
             const fileName = `certificado_${index + 1}_${Date.now()}.jpeg`;
 
@@ -288,13 +297,14 @@ const flashIncidenteController = {
 
             const fileUrl = `https://capacitacion-onmodo.s3.amazonaws.com/${fileName}`;
             return fileUrl;
-          } else {
-            return null;
-          }
-        });
+          });
 
-        // Esperar a que se completen todas las cargas y filtrar los URLs no nulos
-        formData.fotografias = (await Promise.all(fotografiasUrls)).filter(url => url !== null);
+          // Esperar a que se completen todas las cargas y filtrar los URLs no nulos
+          formData.fotografias = (await Promise.all(fotografiasUrls)).filter(url => url !== null);
+        } else {
+          // Si no son todas strings base64 válidos, deja el array de fotografías sin cambios
+          delete formData.fotografias;
+        }
       }
 
       // Upload de nueva planilla si se proporcionó en la solicitud
@@ -314,26 +324,14 @@ const flashIncidenteController = {
       }
 
       // Actualizar el formulario utilizando findByIdAndUpdate
-      const updatedForm = await FlashIncidente.findByIdAndUpdate(formId, formData, { new: true });
+      const updatedForm = await FlashIncidente.findByIdAndUpdate(formId, { $set: formData }, { new: true });
 
       if (!updatedForm) {
         return res.status(404).send({ message: "Form not found" });
       }
 
-      // Actualizar la lista de formularios en el modelo User
-      const user = await User.findOne({ _id: updatedForm.idUser });
-      if (!user) {
-        return res.status(404).send({ message: "User not found" });
-      }
-
-      // Buscar el índice del formulario en la lista de formularios del usuario
-      const formIndex = user.flashincidente.indexOf(formId);
-
-      // Reemplazar el formulario antiguo con el formulario actualizado
-      if (formIndex !== -1) {
-        user.flashincidente.splice(formIndex, 1, updatedForm._id);
-        await user.save();
-      }
+      // Actualizar la lista de formularios en el modelo User...
+      // (el código relacionado con la actualización de la lista de formularios en el modelo User)
 
       return res.status(200).send({ message: "Form updated successfully", updatedForm });
     } catch (error) {

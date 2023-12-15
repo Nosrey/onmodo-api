@@ -30,8 +30,8 @@ const registroCapacitacionController = {
   newRegistroCapacitacion: async (req, res) => {
     const uploadPromise = new Promise((resolve, reject) => {
       upload.single("firma")(req, res, (err) => {
-        console.log(req)
-
+        console.log(req);
+  
         if (err) {
           console.log(err);
           reject(err);
@@ -40,9 +40,10 @@ const registroCapacitacionController = {
         }
       });
     });
-
+  
     try {
       await uploadPromise; // Wait for image upload to complete
+  
       const {
         fecha,
         tiempoDuracion,
@@ -68,14 +69,9 @@ const registroCapacitacionController = {
         businessName,
         idUser
       } = req.body;
-
-
-
-      if (!req.file || !req.file.location) {
-        throw new Error("No se ha proporcionado un archivo válido.");
-      }
-
-
+  
+      const firma = req.file ? req.file.location || "" : ""; // Asigna la ubicación o cadena vacía
+  
       const newRegistroCapacitacion = new RegistroCapacitacion({
         fecha,
         tiempoDuracion,
@@ -100,21 +96,25 @@ const registroCapacitacionController = {
         nombre,
         businessName,
         idUser,
-        firma: req.file.location // Set the profile image URL from S3
+        firma: firma // Establece la URL de la imagen del perfil desde S3 o una cadena vacía
       });
-      var id = newRegistroCapacitacion._id
-      await User.findOneAndUpdate({ _id: req.body.idUser }, { $push: { registrocapacitacion: id } }, { new: true })
+  
+      var id = newRegistroCapacitacion._id;
+  
+      await User.findOneAndUpdate(
+        { _id: req.body.idUser },
+        { $push: { registrocapacitacion: id } },
+        { new: true }
+      );
+  
       await newRegistroCapacitacion.save();
-
-      return res.status(200).send({ message: 'Registro Capacitacion successfully' });
-
-
+  
+      return res.status(200).send({ message: "Registro Capacitacion successfully" });
     } catch (error) {
       console.log(error);
       return res.json({ success: false, error: error });
     }
   },
-
 
   deleteForm: async (req, res) => {
     try {

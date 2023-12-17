@@ -29,8 +29,6 @@ const entregaRopaController = {
   newEntregaRopa: async (req, res) => {
     const uploadPromise = new Promise((resolve, reject) => {
       upload.single("firma")(req, res, (err) => {
-        console.log(req);
-
         if (err) {
           console.log(err);
           reject(err);

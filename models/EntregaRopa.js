@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const entregaRopaSchema = new mongoose.Schema({
     nombre: { type: String, },
     contrato: { type: String },
+    firma: { type: String },
     dni: { type: String, },
     direccion: { type: String, },
     localidad: { type: String, },

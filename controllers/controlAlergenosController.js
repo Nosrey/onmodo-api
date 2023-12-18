@@ -187,11 +187,7 @@ const controlAlergenosController = {
         return res.status(404).send({ message: "Form not found" });
       }
   
-      // Verificar si editEnabled es true en el formulario existente
-      if (!existingForm.editEnabled) {
-        return res.status(403).send({ message: "Editing is not allowed for this form" });
-      }
-  
+     
       // Manejar la edición de archivos si hay cambios en los certificados
       if (formData.certificados && formData.certificados.length > 0) {
         const certificadosUrls = formData.certificados.map(async (base64String, index) => {

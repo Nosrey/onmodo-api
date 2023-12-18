@@ -311,7 +311,7 @@ const flashIncidenteController = {
       if (
         formData.planilla &&
         typeof formData.planilla === "string" &&
-        formData.planilla.startsWith("data:application/")
+        formData.planilla.startsWith("data:image/")
       ) {
         // Upload de nueva planilla solo si es una cadena de base64 válida
         const planillaBuffer = Buffer.from(formData.planilla.replace(/^data:.+;base64,/, ''), 'base64');
@@ -322,7 +322,7 @@ const flashIncidenteController = {
           Key: planillaFileName,
           Body: planillaBuffer,
           ContentEncoding: 'base64',
-          ContentType: 'application/pdf'  // Cambiar el tipo MIME según el tipo de archivo de la planilla
+          ContentType: 'image/jpeg'  // Cambiar el tipo MIME según el tipo de archivo de la planilla
         }).promise();
 
         formData.planilla = `https://capacitacion-onmodo.s3.amazonaws.com/${planillaFileName}`;

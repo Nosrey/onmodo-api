@@ -271,57 +271,83 @@ const entregaBidonesController = {
       if (!existingForm.editEnabled) {
         return res.status(403).send({ message: "Editing is not allowed for this form" });
       }
+      
   
       // Manejar la edición de archivos si hay cambios en los certificados de disposición
-      if (formData.certificadoDisposicion && formData.certificadoDisposicion.length > 0) {
-        const disposicionUrls = formData.certificadoDisposicion.map(async (base64String, index) => {
-          if (base64String) {
+      if (
+        formData.certificadoDisposicion &&
+        Array.isArray(formData.certificadoDisposicion) &&
+        formData.certificadoDisposicion.length > 0
+      ) {
+        // Verificar que todas las imágenes en formData.certificadoDisposicion sean strings base64 válidos
+        const areAllBase64 = formData.certificadoDisposicion.every(
+          (base64String) =>
+            typeof base64String === "string" && base64String.startsWith("data:image/")
+        );
+
+        if (areAllBase64) {
+          // Upload de nuevas fotografías solo si todas son strings base64 válidos
+          const certificadoDisposicionUrls = formData.certificadoDisposicion.map(async (base64String, index) => {
             const newBuffer = Buffer.from(base64String.replace(/^data:.+;base64,/, ''), 'base64');
-            const fileName = `disposicion_${Date.now()}_${index + 1}_${uuidv4()}.jpeg`;
-  
+            const fileName = `certificado_${index + 1}_${Date.now()}.jpeg`;
+
             await s3.putObject({
               Bucket: 'capacitacion-onmodo',
               Key: fileName,
               Body: newBuffer,
               ContentEncoding: 'base64',
-              ContentType: 'image/jpeg',
+              ContentType: 'image/jpeg'
             }).promise();
-  
+
             const fileUrl = `https://capacitacion-onmodo.s3.amazonaws.com/${fileName}`;
             return fileUrl;
-          } else {
-            return null;
-          }
-        });
-  
-        formData.certificadoDisposicion = (await Promise.all(disposicionUrls)).filter(url => url !== null);
+          });
+
+          // Esperar a que se completen todas las cargas y filtrar los URLs no nulos
+          formData.certificadoDisposicion = (await Promise.all(certificadoDisposicionUrls)).filter(url => url !== null);
+        } else {
+          // Si no son todas strings base64 válidos, deja el array de fotografías sin cambios
+          delete formData.certificadoDisposicion;
+        }
       }
   
       // Manejar la edición de archivos si hay cambios en los certificados de transporte
-      if (formData.certificadoTransporte && formData.certificadoTransporte.length > 0) {
-        const transporteUrls = formData.certificadoTransporte.map(async (base64String, index) => {
-          if (base64String) {
+      if (
+        formData.certificadoTransporte &&
+        Array.isArray(formData.certificadoTransporte) &&
+        formData.certificadoTransporte.length > 0
+      ) {
+        // Verificar que todas las imágenes en formData.certificadoTransporte sean strings base64 válidos
+        const areAllBase64 = formData.certificadoTransporte.every(
+          (base64String) =>
+            typeof base64String === "string" && base64String.startsWith("data:image/")
+        );
+
+        if (areAllBase64) {
+          // Upload de nuevas fotografías solo si todas son strings base64 válidos
+          const certificadoTransporteUrls = formData.certificadoTransporte.map(async (base64String, index) => {
             const newBuffer = Buffer.from(base64String.replace(/^data:.+;base64,/, ''), 'base64');
-            const fileName = `transporte_${Date.now()}_${index + 1}_${uuidv4()}.jpeg`;
-  
+            const fileName = `certificado_${index + 1}_${Date.now()}.jpeg`;
+
             await s3.putObject({
               Bucket: 'capacitacion-onmodo',
               Key: fileName,
               Body: newBuffer,
               ContentEncoding: 'base64',
-              ContentType: 'image/jpeg',
+              ContentType: 'image/jpeg'
             }).promise();
-  
+
             const fileUrl = `https://capacitacion-onmodo.s3.amazonaws.com/${fileName}`;
             return fileUrl;
-          } else {
-            return null;
-          }
-        });
-  
-        formData.certificadoTransporte = (await Promise.all(transporteUrls)).filter(url => url !== null);
+          });
+
+          // Esperar a que se completen todas las cargas y filtrar los URLs no nulos
+          formData.certificadoTransporte = (await Promise.all(certificadoTransporteUrls)).filter(url => url !== null);
+        } else {
+          // Si no son todas strings base64 válidos, deja el array de fotografías sin cambios
+          delete formData.certificadoTransporte;
+        }
       }
-  
       // Actualizar el formulario utilizando findByIdAndUpdate
       const updatedForm = await EntregaBidones.findByIdAndUpdate(formId, formData, { new: true });
   

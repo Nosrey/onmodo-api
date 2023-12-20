@@ -33,12 +33,15 @@ const controlAlergenosController = {
   newControlAlergenos: async (req, res) => {
     try {
       const { certificados = [], inputs, comedor, verified, date, status, editEnabled, wasEdited, dateLastEdition, motivo, motivoPeticion, motivoRespuesta, whoApproved, businessName, idUser, rol, nombre } = req.body;
-  
-      const certificadosUrls = await Promise.all(certificados.map(async (base64String, index) => {
+
+      const certificadosArray = Array.isArray(certificados) ? certificados : [];
+
+
+      const certificadosUrls = await Promise.all(certificadosArray.map(async (base64String, index) => {
         if (base64String) {
           const newBuffer = Buffer.from(base64String.replace(/^data:.+;base64,/, ''), 'base64');
           const fileName = `certificado_${index + 1}_${Date.now()}.jpeg`;
-  
+
           await s3.putObject({
             Bucket: 'capacitacion-onmodo',
             Key: fileName,
@@ -46,16 +49,19 @@ const controlAlergenosController = {
             ContentEncoding: 'base64',
             ContentType: 'image/jpeg'
           }).promise();
-  
+
           const fileUrl = `https://capacitacion-onmodo.s3.amazonaws.com/${fileName}`;
           return fileUrl;
         } else {
           return null; // o algún valor por defecto si lo prefieres
         }
       }));
-  
+
+      const certificadosUrlsArray = (await Promise.all(certificadosUrls)).filter(url => url !== null);
+
+
       const newControlAlergenosData = {
-        certificados: certificadosUrls,
+        certificados: certificadosUrlsArray,
         inputs,
         comedor,
         verified,
@@ -73,14 +79,14 @@ const controlAlergenosController = {
         rol,
         nombre
       };
-  
+
       const newControlAlergenos = new ControlAlergenos(newControlAlergenosData);
       var id = newControlAlergenos._id;
       await User.findOneAndUpdate({ _id: idUser }, { $push: { controlalergenos: id } }, { new: true });
       await newControlAlergenos.save();
-  
+
       return res.status(200).send({ message: 'Control Alergenos created successfully' });
-  
+
     } catch (error) {
       console.error(error);
       return res.status(500).send({ error: error.message });
@@ -179,22 +185,33 @@ const controlAlergenosController = {
     try {
       const formId = req.params.formId;
       const formData = req.body;
-  
+
       // Obtener el formulario existente
       const existingForm = await ControlAlergenos.findById(formId);
-  
+
       if (!existingForm) {
         return res.status(404).send({ message: "Form not found" });
       }
-  
-     
+
+
       // Manejar la edición de archivos si hay cambios en los certificados
-      if (formData.certificados && formData.certificados.length > 0) {
-        const certificadosUrls = formData.certificados.map(async (base64String, index) => {
-          if (base64String) {
+      if (
+        formData.certificados &&
+        Array.isArray(formData.certificados) &&
+        formData.certificados.length > 0
+      ) {
+        // Verificar que todas las imágenes en formData.certificados sean strings base64 válidos
+        const areAllBase64 = formData.certificados.every(
+          (base64String) =>
+            typeof base64String === "string" && base64String.startsWith("data:image/")
+        );
+
+        if (areAllBase64) {
+          // Upload de nuevas fotografías solo si todas son strings base64 válidos
+          const certificadosUrls = formData.certificados.map(async (base64String, index) => {
             const newBuffer = Buffer.from(base64String.replace(/^data:.+;base64,/, ''), 'base64');
             const fileName = `certificado_${index + 1}_${Date.now()}.jpeg`;
-  
+
             await s3.putObject({
               Bucket: 'capacitacion-onmodo',
               Key: fileName,
@@ -202,40 +219,40 @@ const controlAlergenosController = {
               ContentEncoding: 'base64',
               ContentType: 'image/jpeg'
             }).promise();
-  
+
             const fileUrl = `https://capacitacion-onmodo.s3.amazonaws.com/${fileName}`;
             return fileUrl;
-          } else {
-            return null;
-          }
-        });
-  
-        const certificadosUrlsArray = (await Promise.all(certificadosUrls)).filter(url => url !== null);
-        formData.certificados = certificadosUrlsArray;
+          });
+
+          // Esperar a que se completen todas las cargas y filtrar los URLs no nulos
+          formData.certificados = (await Promise.all(certificadosUrls)).filter(url => url !== null);
+        } else {
+          // Si no son todas strings base64 válidos, deja el array de fotografías sin cambios
+          delete formData.certificados;
+        }
       }
-  
       // Actualizar el formulario utilizando findByIdAndUpdate
       const updatedForm = await ControlAlergenos.findByIdAndUpdate(formId, formData, { new: true });
-  
+
       if (!updatedForm) {
         return res.status(404).send({ message: "Form not found" });
       }
-  
+
       // Actualizar la lista de formularios en el modelo User
       const user = await User.findOne({ _id: updatedForm.idUser });
       if (!user) {
         return res.status(404).send({ message: "User not found" });
       }
-  
+
       // Buscar el índice del formulario en la lista de formularios del usuario
       const formIndex = user.controlalergenos.indexOf(formId);
-  
+
       // Reemplazar el formulario antiguo con el formulario actualizado
       if (formIndex !== -1) {
         user.controlalergenos.splice(formIndex, 1, updatedForm._id);
         await user.save();
       }
-  
+
       return res.status(200).send({ message: "Form updated successfully", updatedForm });
     } catch (error) {
       return res.status(500).send({ error: error.message });

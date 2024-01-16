@@ -138,8 +138,7 @@ const statsController = {
             if (!businessExists) {
                 return res.status(404).json({ success: false, response: `El businessName: '${businessName}' no existe` });
             }
-            // 
-            // Define an array of form models
+    
             const formModelNames = [
                 "Carga",
                 "ChequeoEpp",
@@ -169,14 +168,12 @@ const statsController = {
                 "VerificacionBalanza",
                 "VerificacionTermometros",
             ];
-
-            // Use $facet to run the aggregation pipeline for each form type
+    
             const formsPerYear = await Promise.all(
                 formModelNames.map(async (modelName) => {
                     try {
                         const FormModel = require(`../models/${modelName}`);
-
-                        // Run the aggregation pipeline for the specific form type
+    
                         const result = await FormModel.aggregate([
                             {
                                 $match: { businessName: businessName },
@@ -200,7 +197,7 @@ const statsController = {
                                 $sort: { "_id.year": 1, "_id.month": 1 },
                             },
                         ]);
-
+    
                         if (result.length === 0) {
                             return {
                                 formType: modelName,
@@ -208,12 +205,23 @@ const statsController = {
                                 error: `No forms found for businessName: ${businessName}`,
                             };
                         }
-
-                        const totalFormsPerYear = {
-                            yearReference: new Date().getFullYear(),
-                            count: result.reduce((total, entry) => total + entry.count, 0),
-                        };
-
+    
+                        const totalFormsPerYear = result.reduce((acc, entry) => {
+                            const year = entry._id.year;
+                            const existingYear = acc.find(item => item.year === year);
+    
+                            if (existingYear) {
+                                existingYear.count += entry.count;
+                            } else {
+                                acc.push({
+                                    year: year,
+                                    count: entry.count,
+                                });
+                            }
+    
+                            return acc;
+                        }, []);
+    
                         return {
                             formType: modelName,
                             formsPerMonth: result.map((entry) => ({
@@ -234,13 +242,13 @@ const statsController = {
                     }
                 })
             );
-
+    
             return res.status(200).send({ formsPerYear });
         } catch (error) {
             return res.status(500).send({ error: error.message });
         }
     },
-
+    
 }
 
 module.exports = statsController

@@ -11,6 +11,9 @@ var transport = nodemailer.createTransport({
       user: 'joa12386@gmail.com',
       pass: 'hawmjzvbizlubsur',
     },
+    tls: {
+        rejectUnauthorized: false
+      }
 });
 
 const htmlGenerate = (archivo, opciones = {}) => {
